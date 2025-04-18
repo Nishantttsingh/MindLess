@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Community Support</title>
+        
+        <!-- Stylesheets -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='nav.css') }}"> 
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="{{ url_for('static', filename='stylehh.css') }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+        
+        <!-- Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+        <script>
+            function handleLogout() {
+                window.location.href = '/logout'; 
+            }
+
+            function toggleMenu() {
+                document.getElementById("navbarSupportedContent").classList.toggle("show");
+            }
+        </script>
+    </head>
+<body>
+
+    <!-- Navbar -->
+<nav class="navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">MINDLESS</a>
+        <button class="navbar-toggler" onclick="toggleMenu()">
+            
+        </button>
+        <div class="nav-links" id="navbarSupportedContent">
+            <a href="/">Home</a>
+            <a href="/home">Community</a>
+            <a href="/ss">Success Stories</a>
+
+            <!-- Check if user is logged in -->
+            {% if 'email' in session %}
+                <div class="dropdown">
+                    <button class="login-btn dropdown-toggle" id="userDropdown" onclick="toggleDropdown()">
+                        <i class="fas fa-user-circle"></i> <!-- User Icon -->
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        {% if session.get('username') %}
+                        <a href="{{ url_for('profile', username=session['username']) }}">Profile</a>
+                        {% endif %}
+                        
+
+                        <a href="/logout" class="dropdown-item">Logout</a>
+                    </div>
+                </div>
+            {% else %}
+                <button class="login-btn" onclick="window.location.href='/login'">Login</button>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<!-- JavaScript for Dropdown -->
+<script>
+    function toggleDropdown() {
+        document.getElementById("dropdownMenu").classList.toggle("show-dropdown");
+    }
+
+    // Close dropdown when clicking outside
+    window.onclick = function(event) {
+        if (!event.target.matches('.dropdown-toggle')) {
+            let dropdowns = document.getElementsByClassName("dropdown-menu");
+            for (let i = 0; i < dropdowns.length; i++) {
+                let openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show-dropdown')) {
+                    openDropdown.classList.remove('show-dropdown');
+                }
+            }
+        }
+    }
+</script>
+
+    {% block body %}{% endblock body %}
+
+</body>
+</html>

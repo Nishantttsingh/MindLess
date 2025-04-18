@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block body %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='nav.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylehh.css') }}">
+</head>
+
+<div class="form-container">
+    <form action="/edit-profile" method="POST" enctype="multipart/form-data">
+        <!-- Profile Picture -->
+        <div class="profile-pic-section">
+            <div class="profile-pic-container">
+                <img id="profile-preview" src="{{ url_for('static', filename='uploads/' ~ user.profile_pic) if user.profile_pic else url_for('static', filename='default-profile.png') }}" alt="Profile Picture">
+            </div>
+            <label for="profile-pic" class="upload-btn">Upload Picture</label>
+            <input type="file" id="profile-pic" name="profile_pic" accept="image/*" hidden>
+        </div>
+
+        <!-- User Info -->
+        <div class="row">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" value="{{ user.username }}" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" disabled>
+            </div>
+        </div>
+
+        <!-- Bio -->
+        <div class="form-group">
+            <label for="bio">Bio</label>
+            <textarea id="bio" name="bio" rows="3">{{ user.bio }}</textarea>
+        </div>
+
+        <!-- Gender & Preferred Contact -->
+        <div class="row">
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" name="gender">
+                    <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female</option>
+                    <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="preferred_contact_method">Preferred Contact</label>
+                <select id="preferred_contact_method" name="preferred_contact_method">
+                    <option value="Email" {% if user.preferred_contact_method == 'Email' %}selected{% endif %}>Email</option>
+                    <option value="Phone" {% if user.preferred_contact_method == 'Phone' %}selected{% endif %}>Phone</option>
+                    <option value="Chat" {% if user.preferred_contact_method == 'Chat' %}selected{% endif %}>Chat</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Mental Health -->
+        <div class="form-group">
+            <label for="mental_health_status">Mental Health Status</label>
+            <input type="text" id="mental_health_status" name="mental_health_status" value="{{ user.mental_health_status }}">
+        </div>
+
+        <!-- Password Change -->
+        <h3>Change Password</h3>
+        <div class="row">
+            <div class="form-group password-group">
+                <label for="current-password">Current Password</label>
+                <div class="password-container">
+                    <input type="password" id="current-password" name="current_password">
+                    <span class="toggle-password" onclick="togglePassword('current-password')">👁️</span>
+                </div>
+            </div>
+            <div class="form-group password-group">
+                <label for="new-password">New Password</label>
+                <div class="password-container">
+                    <input type="password" id="new-password" name="new_password">
+                    <span class="toggle-password" onclick="togglePassword('new-password')">👁️</span>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit">Save Changes</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('profile-pic').addEventListener('change', function(event) {
+        let reader = new FileReader();
+        reader.onload = function () {
+            document.getElementById('profile-preview').src = reader.result;
+        }
+        reader.readAsDataURL(event.target.files[0]);
+    });
+
+    function togglePassword(inputId) {
+        let input = document.getElementById(inputId);
+        input.type = input.type === "password" ? "text" : "password";
+    }
+</script>
+{% endblock %}

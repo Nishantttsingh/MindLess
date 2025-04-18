@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mental Health Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000000;
+            color: #FFFFFF;
+            text-align: center;
+            margin: 50px;
+        }
+
+        #chatbox {
+            width: 80%;
+            max-width: 600px;
+            margin: auto;
+            background-color: #0A0A0A;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #00BFFF;
+            box-shadow: 0px 0px 15px #00BFFF;
+        }
+
+        #messages {
+            border: 2px solid #00BFFF;
+            padding: 10px;
+            height: 300px;
+            overflow-y: scroll;
+            text-align: left;
+            background-color: #121212;
+            border-radius: 5px;
+            box-shadow: inset 0 0 10px #00BFFF;
+            color: white;
+        }
+
+        input {
+            width: calc(100% - 24px);
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #00BFFF;
+            border-radius: 5px;
+            background-color: #1E1E1E;
+            color: white;
+            transition: all 0.3s ease-in-out;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            background-color: #00BFFF;
+            color: white;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 191, 255, 0.3);
+        }
+
+        button:hover {
+            background-color: #00A6D6;
+            box-shadow: 0 0 20px #00BFFF;
+            transform: scale(1.05);
+        }
+
+        .mic-button {
+            background-color: red;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-top: 10px;
+            cursor: pointer;
+            color: white;
+            font-size: 24px;
+            line-height: 50px;
+            text-align: center;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px red; }
+            50% { box-shadow: 0 0 15px red; }
+            100% { box-shadow: 0 0 5px red; }
+        }
+
+        .status {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #00FF00;
+        }
+    </style>
+</head>
+<body>
+    <h2>AI Mental Health Assistant</h2>
+    <div id="chatbox">
+        <div id="messages"></div>
+        <input type="text" id="userInput" placeholder="Type or Speak a message..." />
+        <button onclick="sendMessage()">Send</button>
+        <div class="mic-button" onclick="toggleVoiceRecognition()">🎤</div>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+        let voices = [];
+
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+            if (voices.length === 0) {
+                setTimeout(loadVoices, 100);
+            }
+        }
+
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+
+        function toggleVoiceRecognition() {
+            if (isListening) {
+                stopVoiceRecognition();
+            } else {
+                startVoiceRecognition();
+            }
+        }
+
+        function startVoiceRecognition() {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert("Your browser does not support Speech Recognition. Please use Chrome or Edge.");
+                return;
+            }
+
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = false;
+            recognition.lang = "en-US";
+            recognition.interimResults = false;
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById("userInput").value = transcript;
+                sendMessage();
+            };
+
+            recognition.start();
+            isListening = true;
+        }
+
+        function stopVoiceRecognition() {
+            if (recognition) {
+                recognition.stop();
+            }
+            isListening = false;
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById("userInput").value.trim();
+            if (!userInput) return;
+
+            const messagesDiv = document.getElementById("messages");
+            const userMessage = document.createElement("p");
+            userMessage.innerHTML = `<strong>You:</strong> ${userInput}`;
+            messagesDiv.appendChild(userMessage);
+
+            const aiMessage = document.createElement("p");
+            aiMessage.innerHTML = `<strong>AI:</strong> <i>Thinking...</i>`;
+            messagesDiv.appendChild(aiMessage);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: userInput })
+                });
+
+                const data = await response.json();
+                aiMessage.innerHTML = `<strong>AI:</strong> ${data.reply}`;
+                setTimeout(() => speakText(data.reply), 800);
+            } catch (error) {
+                aiMessage.innerHTML = `<strong>AI:</strong> Error fetching response.`;
+            }
+            document.getElementById("userInput").value = "";
+        }
+
+        function speakText(text) {
+    // Stop any ongoing speech before speaking new response
+    if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+    }
+
+    const utterance = new SpeechSynthesisUtterance(
+        text.replace(/, /g, ", ... ").replace(/\./g, ". ... ")
+    );
+
+    let selectedVoice = voices.find(voice =>
+        voice.name.includes("Google US English") || voice.name.includes("Microsoft Zira")
+    );
+    if (selectedVoice) utterance.voice = selectedVoice;
+
+    utterance.rate = 0.92;   // More natural pace
+    utterance.pitch = 1.07;  // Slightly expressive
+
+    speechSynthesis.speak(utterance);
+}
+
+
+
+        document.getElementById("userInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        loadVoices();
+    </script>
+</body>
+</html>

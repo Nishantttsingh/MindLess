@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Breathe Game{% endblock %}
+
+{% block body %}
+<style>
+    body {
+        background: #121212;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 90vh;
+        text-align: center;
+        color: #f8f8f8;
+    }
+
+    h2 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        color: #a0e7e5;
+        animation: pulseGlow 4s infinite;
+    }
+
+    #bubble {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #a0e7e5, #b4f8c8);
+        transition: transform 2s ease;
+        box-shadow: 0 0 20px #b4f8c8;
+    }
+
+    #instruction {
+        margin-top: 20px;
+        font-size: 1.5rem;
+        font-weight: 500;
+    }
+
+    #feedback {
+        margin-top: 10px;
+        font-size: 1.3rem;
+        font-weight: bold;
+        transition: 0.3s ease;
+    }
+
+    .score {
+        margin-top: 10px;
+        font-size: 1.2rem;
+        color: #ffd6a5;
+    }
+
+    @keyframes pulseGlow {
+        0%, 100% { text-shadow: 0 0 10px #b4f8c8; }
+        50% { text-shadow: 0 0 20px #a0e7e5; }
+    }
+</style>
+
+<div class="container">
+    <h2>🌀 Breathe to the Beat 🌀</h2>
+    <div id="bubble"></div>
+    
+    <p id="instruction">Inhale... 🌬️</p>
+    <p id="feedback"></p>
+    <p class="score">Press <strong>Spacebar</strong> at the right time!</p>
+    <p class="score">Score: <span id="score">0</span></p>
+</div>
+
+<script>
+    const bubble = document.getElementById('bubble');
+    const instruction = document.getElementById('instruction');
+    const feedback = document.getElementById('feedback');
+    const scoreDisplay = document.getElementById('score');
+
+    let growing = true;
+    let score = 0;
+    let cycleStartTime = Date.now();
+
+    function breathe() {
+        if (growing) {
+            bubble.style.transform = 'scale(2)';
+            instruction.textContent = 'Inhale... 🌬️';
+        } else {
+            bubble.style.transform = 'scale(1)';
+            instruction.textContent = 'Exhale... 😮‍💨';
+        }
+        growing = !growing;
+        cycleStartTime = Date.now();
+    }
+
+    breathe();
+    setInterval(breathe, 4000);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+            const now = Date.now();
+            const elapsed = (now - cycleStartTime) % 4000;
+            const timing = growing ? elapsed : 4000 - elapsed;
+
+            if (timing < 400 || timing > 3600) {
+                score += 1;
+                feedback.textContent = "🎯 Perfect!";
+                feedback.style.color = "#90f0e8";
+            } else {
+                feedback.textContent = "❌ Missed the rhythm!";
+                feedback.style.color = "#ff8888";
+                score = Math.max(0, score - 1);
+            }
+            scoreDisplay.textContent = score;
+        }
+    });
+</script>
+{% endblock %}

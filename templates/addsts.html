@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block body %}
+<link rel="stylesheet" href="{{ url_for('static', filename='nav.css') }}">
+<section class="container my-5">
+    <h2 class="text-center mb-4">Add Your Success Story</h2>
+
+    <!-- Success Story Form -->
+    <form method="POST" action="/addsts" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="name" class="form-label">Your Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Story Description</label>
+            <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="photo" class="form-label">Upload a Photo</label>
+            <input type="file" class="form-control" id="photo" name="photo" accept="image/*" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Story</button>
+    </form>
+</section>
+{% endblock body %}

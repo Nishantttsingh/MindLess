@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='nav.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylehh.css') }}">
+</head>
+
+<div class="container mt-4">
+    <div class="card p-4 shadow-lg rounded">
+        <h2 class="text-center mb-4">Create a New Post</h2>
+        <form action="{{ url_for('submit_post') }}" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" id="title" name="title" class="form-control" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="photo" class="form-label">Upload Image (optional)</label>
+                <input type="file" id="photo" name="photo" class="form-control">
+            </div>
+            
+            <div class="mb-3">
+                <label for="content" class="form-label">Content</label>
+                <textarea id="content" name="content" class="form-control" rows="5" required></textarea>
+            </div>
+            
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Post</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
