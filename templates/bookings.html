@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block body %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<header>
+    <h1>Your Booked Sessions</h1>
+</header>
+
+<main>
+    {% if bookings %}
+        <ul>
+            {% for booking in bookings %}
+                <li>
+                    <strong>{{ booking['professional'] }}</strong> - {{ booking['time'] }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No bookings yet.</p>
+    {% endif %}
+</main>
+{% endblock %}

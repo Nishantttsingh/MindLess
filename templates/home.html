@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='nav.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylehh.css') }}">
+</head>
+
+<div class="container-fluid my-3">
+    <div class="d-flex">
+        <!-- Sidebar (Fixed) -->
+        <div id="sidebar" class="sidebar">
+            {% if 'email' in session %}
+            <a href="#" class="sidebar-link">
+                <i class="icon-plus"></i> Add Post
+            </a>
+            {% endif %}
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">RELAX & RESET</h3>
+                <a href="{{ url_for('breathe_game') }}" class="sidebar-link">
+                    <i class="icon-wind"></i> Breathe With Me
+                </a>
+                <a href="{{ url_for('memory_game') }}" class="sidebar-link">
+                    <i class="icon-brain"></i> Memory Flip
+                </a>
+                <a href="{{ url_for('bubble_game') }}" class="sidebar-link">
+                    <i class="icon-circle"></i> Bubble Pop
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">EXPLORE</h3>
+               
+                <a href="#" class="sidebar-link">
+                    <i class="icon-pen"></i> Daily Reflection
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="icon-smile"></i> Mood Tracker
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="icon-book"></i> Self-Care Library
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">RESOURCES</h3>
+                <a href="#" class="sidebar-link">
+                    <i class="icon-info"></i> About
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="icon-ad"></i> Advertise
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Feed (Scrollable) -->
+        <div id="content" class="content flex-grow-1">
+            <h2>Community Feed</h2>
+            {% for post in posts %}
+            <div class="post border p-3 mb-3 rounded shadow-sm">
+                <div class="d-flex justify-content-between">
+                    <h4>{{ post.title }}</h4>
+                    <small>Posted by {{ post.author }}</small>
+                </div>
+
+                <!-- Post Image -->
+                <div class="text-center my-2">
+                    <img src="{{ url_for('static', filename='images/' + post.photo) }}" 
+                         class="img-fluid rounded shadow-sm" 
+                         alt="Post Image" 
+                         style="max-width: 100%; height: 250px; object-fit: cover;">
+                </div>
+
+                <p>{{ post.content }}</p>
+
+                {% if 'email' in session %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <button class="btn btn-light like-btn" data-post-id="{{ post.id }}">
+                        <i class="fas fa-heart"></i> 
+                    </button>
+                    <button class="btn btn-light comment-btn" data-target="comments{{ post.id }}">
+                        <i class="fas fa-comment-dots"></i>
+                    </button>
+                </div>                
+                {% else %}
+                    <p class="text-muted mt-2">You need to <a href="{{ url_for('login_page') }}">login</a> to interact.</p>
+                {% endif %}
+
+                {% if 'email' in session %}
+                <!-- Comment Section -->
+                <div id="comments{{ post.id }}" class="comments mt-3" style="display: none;">
+                    {% for comment in post.comments %}
+                    <div class="comment p-2 border rounded mt-2 d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ comment.user }}:</strong> {{ comment.text }}
+                        </div>
+                        {% if session['email'] == comment.user %}
+                        <form action="{{ url_for('delete_comment', post_id=post.id, comment_index=loop.index0) }}" method="post">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <!-- Add Comment Form -->
+                    <form class="comment-form mt-2" data-post-id="{{ post.id }}">
+                        <div class="input-group">
+                            <input type="text" name="comment_text" class="form-control comment-input" placeholder="Write a comment..." required>
+                            <button type="submit" class="btn btn-primary">Post</button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div> 
+            {% endfor %}
+        </div> 
+    </div> 
+</div> 
+
+<!-- JavaScript for Comments and Voting -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Toggle comment section visibility
+        document.querySelectorAll(".comment-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                let commentSection = document.getElementById(this.getAttribute("data-target"));
+                commentSection.style.display = (commentSection.style.display === "none" || !commentSection.style.display) ? "block" : "none";
+            });
+        });
+
+        document.querySelectorAll(".like-btn").forEach(button => {
+            let icon = button.querySelector("i");
+
+            button.addEventListener("click", function () {
+                if (!this.classList.contains("liked")) {
+                    this.classList.add("liked");
+                    icon.classList.add("liked-heart");
+                } else {
+                    this.classList.remove("liked");
+                    icon.classList.remove("liked-heart");
+                }
+            });
+        });
+
+        document.querySelectorAll(".comment-form").forEach(form => {
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                let postId = this.getAttribute("data-post-id");
+                let commentInput = this.querySelector(".comment-input");
+                let commentText = commentInput.value;
+
+                fetch(`{{ url_for('add_comment', post_id=0) }}`.replace("0", postId), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: `comment_text=${encodeURIComponent(commentText)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        let commentSection = document.getElementById(`comments${postId}`);
+                        let newComment = document.createElement("div");
+                        newComment.classList.add("comment", "p-2", "border", "rounded", "mt-2", "d-flex", "justify-content-between", "align-items-center");
+                        newComment.innerHTML = `
+                            <div><strong>${data.user}:</strong> ${commentText}</div>
+                            <button type="button" class="btn btn-sm btn-danger delete-comment" data-post-id="${postId}" data-comment-index="${data.comment_index}">Delete</button>
+                        `;
+                        commentSection.prepend(newComment);
+                        commentInput.value = "";
+                    }
+                });
+            });
+        });
+
+        // Handle Comment Deletion via AJAX
+        document.addEventListener("click", function (event) {
+            if (event.target.classList.contains("delete-comment")) {
+                let postId = event.target.getAttribute("data-post-id");
+                let commentIndex = event.target.getAttribute("data-comment-index");
+                let commentDiv = event.target.closest(".comment");
+
+                fetch(`{{ url_for('delete_comment', post_id=0, comment_index=0) }}`.replace("0", postId).replace("0", commentIndex), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        commentDiv.remove();
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+<style>
+.liked-heart {
+    color: red !important;
+    transition: transform 0.2s ease-in-out;
+}
+.like-btn:hover i {
+    color: red !important;
+    transform: scale(1);
+}
+.like-btn:focus,
+.like-btn:active,
+.comment-btn:focus,
+.comment-btn:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+</style>
+
+{% endblock %}
