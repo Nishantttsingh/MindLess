@@ -2,12 +2,16 @@
 
 {% block body %}
 <head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='nav.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='stylehh.css') }}">
+    <!-- Add cache-busting version parameter -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='nav.css') }}?v=1.1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylehh.css') }}?v=1.1">
+    
+    
 </head>
 
 <div class="profile-container">
-    <div class="profile-header">
+    <!-- Rest of your template remains the same -->
+    <div class="profile-card">
         <div class="profile-pic-container">
             <img src="{{ url_for('static', filename='uploads/' + (user.profile_pic or 'default.png')) }}" 
                  alt="Profile Picture" class="profile-pic">

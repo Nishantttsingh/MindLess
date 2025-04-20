@@ -1,0 +1,148 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Dark Theme Variables */
+:root {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --primary-color: #00bfff;
+    --secondary-color: #00c897;
+    --accent-color: #6a11cb;
+    --border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Body */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Container */
+.container {
+    max-width: 400px;
+    width: 100%;
+    padding: 20px;
+    border-radius: 10px;
+    position: relative;
+}
+
+/* Flip Card */
+.flip-card__inner {
+    width: 100%;
+    height: 350px;
+    position: relative;
+    background-color: transparent;
+    perspective: 1000px;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+}
+
+/* Front & Back */
+.flip-card__front, .flip-card__back {
+    padding: 20px;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: var(--bg-color);
+    gap: 20px;
+    border-radius: 5px;
+    border: 2px solid var(--border-color);
+    box-shadow: 4px 4px var(--primary-color);
+    width: 100%;
+    backface-visibility: hidden;
+}
+
+/* Back Side */
+.flip-card__back {
+    transform: rotateY(180deg);
+}
+
+.flipped {
+    transform: rotateY(180deg);
+}
+
+/* Title */
+.title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
+
+/* Form Container */
+.form-container {
+    text-align: center;
+}
+
+/* Form Inputs */
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: var(--text-color);
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 1rem;
+    outline: none;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.form-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px var(--primary-color);
+}
+
+/* Button */
+.btn {
+    background: var(--primary-color);
+    color: var(--text-color);
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.3s ease;
+}
+
+.btn:hover {
+    background: #009f75;
+}
+
+/* Signup Link */
+.signup-link {
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+
+.signup-link .link {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.signup-link .link:hover {
+    text-decoration: underline;
+}
