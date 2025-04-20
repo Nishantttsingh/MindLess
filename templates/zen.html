@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %} Drawing{% endblock %}
+
+{% block body %}
+<link rel="stylesheet" href="{{ url_for('static', filename='nav.css') }}?v=1.1">
+<style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000000;
+      color: white;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    #controls {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      z-index: 10;
+    }
+
+    #palette {
+      display: flex;
+      gap: 15px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 50px;
+    }
+
+    .color {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid white;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .color:hover {
+      transform: scale(1.2);
+    }
+
+    .color.selected {
+      box-shadow: 0 0 15px currentColor;
+      transform: scale(1.1);
+    }
+
+    #customColorPicker {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid white;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    button {
+      padding: 12px 30px;
+      background-color: #3a3a5c;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      background-color: #5c5c8a;
+      transform: scale(1.05);
+    }
+
+    #message {
+      font-style: italic;
+      color: #99ccff;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      cursor: crosshair;
+      z-index: 1;
+    }
+</style>
+
+<div id="controls">
+  <button onclick="clearCanvas()">Clear Canvas</button>
+  <div id="palette">
+    <div class="color selected" style="background: #a8dadc;" data-color="#a8dadc"></div>
+    <div class="color" style="background: #fcbf49;" data-color="#fcbf49"></div>
+    <div class="color" style="background: #b5ead7;" data-color="#b5ead7"></div>
+    <div class="color" style="background: #f7ede2;" data-color="#f7ede2"></div>
+    <div class="color" style="background: #d291bc;" data-color="#d291bc"></div>
+    <input type="color" id="customColorPicker" value="#ffffff" title="Pick your own color">
+  </div>
+  <div id="message">Choose a color, then draw freely!</div>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let selectedColor = '#a8dadc';
+
+  // Set canvas size
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  // Set initial drawing style
+  ctx.lineWidth = 5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Color selection
+  document.querySelectorAll('.color').forEach(color => {
+    color.addEventListener('click', () => {
+      selectedColor = color.dataset.color;
+      document.querySelectorAll('.color').forEach(c => c.classList.remove('selected'));
+      color.classList.add('selected');
+      document.getElementById('message').textContent = "Color selected. Start drawing!";
+    });
+  });
+
+  // Custom color picker
+  document.getElementById('customColorPicker').addEventListener('input', (e) => {
+    selectedColor = e.target.value;
+    document.querySelectorAll('.color').forEach(c => c.classList.remove('selected'));
+    document.getElementById('message').textContent = "Custom color selected. Start drawing!";
+  });
+
+  // Drawing functions
+  function startDrawing(e) {
+    drawing = true;
+    draw(e);
+  }
+
+  function draw(e) {
+    if (!drawing) return;
+    
+    ctx.strokeStyle = selectedColor;
+    ctx.lineTo(
+      e.clientX || e.touches[0].clientX, 
+      e.clientY || e.touches[0].clientY
+    );
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(
+      e.clientX || e.touches[0].clientX, 
+      e.clientY || e.touches[0].clientY
+    );
+  }
+
+  function stopDrawing() {
+    drawing = false;
+    ctx.beginPath();
+  }
+
+  // Mouse events
+  canvas.addEventListener('mousedown', startDrawing);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('mouseleave', stopDrawing);
+
+  // Touch events
+  canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    startDrawing(e);
+  });
+  
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    draw(e);
+  });
+  
+  canvas.addEventListener('touchend', stopDrawing);
+
+  // Clear canvas
+  function clearCanvas() {
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    document.getElementById('message').textContent = "Canvas cleared. Pick a new color!";
+  }
+</script>
+
+{% endblock %}

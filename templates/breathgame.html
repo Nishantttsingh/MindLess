@@ -1,117 +1,367 @@
 {% extends 'base.html' %}
 
-{% block title %}Breathe Game{% endblock %}
+{% block title %}Mindful Breathing{% endblock %}
 
 {% block body %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='nav.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylehh.css') }}">
+</head>
 <style>
     body {
-        background: #121212;
-        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+        font-family: 'Poppins', sans-serif;
+        overflow: hidden;
+        height: 100vh;
+        margin: 0;
     }
 
-    .container {
+    .game-container {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 90vh;
+        height: 100vh;
         text-align: center;
-        color: #f8f8f8;
+        color: white;
+        position: relative;
     }
 
-    h2 {
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-        color: #a0e7e5;
-        animation: pulseGlow 4s infinite;
+    h1 {
+        font-size: 2.8rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(90deg, #a1c4fd, #c2e9fb);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
 
-    #bubble {
-        width: 120px;
-        height: 120px;
+    .breath-circle {
+        width: 200px;
+        height: 200px;
         border-radius: 50%;
-        background: radial-gradient(circle at 30% 30%, #a0e7e5, #b4f8c8);
-        transition: transform 2s ease;
-        box-shadow: 0 0 20px #b4f8c8;
+        background: radial-gradient(circle at 30% 30%, #a1c4fd, #c2e9fb);
+        box-shadow: 0 0 40px rgba(161, 196, 253, 0.6);
+        margin: 2rem 0;
+        transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        position: relative;
+        overflow: hidden;
     }
 
-    #instruction {
-        margin-top: 20px;
+    .breath-circle::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .breath-circle.active::before {
+        opacity: 0.3;
+    }
+
+    .instructions {
         font-size: 1.5rem;
+        margin: 1rem 0;
         font-weight: 500;
+        min-height: 2rem;
     }
 
-    #feedback {
-        margin-top: 10px;
+    .feedback {
         font-size: 1.3rem;
-        font-weight: bold;
-        transition: 0.3s ease;
+        margin: 0.5rem 0;
+        min-height: 2rem;
+        transition: all 0.3s ease;
     }
 
-    .score {
-        margin-top: 10px;
+    .score-display {
         font-size: 1.2rem;
-        color: #ffd6a5;
+        margin-top: 1rem;
+        background: rgba(255,255,255,0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        backdrop-filter: blur(5px);
     }
 
-    @keyframes pulseGlow {
-        0%, 100% { text-shadow: 0 0 10px #b4f8c8; }
-        50% { text-shadow: 0 0 20px #a0e7e5; }
+    .controls {
+        margin-top: 2rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+    button {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+        padding: 0.5rem 1.5rem;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+    }
+
+    button:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    .particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .particle {
+        position: absolute;
+        background: rgba(255,255,255,0.6);
+        border-radius: 50%;
+        animation: float 15s infinite linear;
+    }
+
+    @keyframes float {
+        0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 0;
+        }
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-100vh) rotate(360deg);
+            opacity: 0;
+        }
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 40px rgba(161, 196, 253, 0.6);
+        }
+        50% {
+            box-shadow: 0 0 60px rgba(161, 196, 253, 0.9);
+        }
     }
 </style>
 
-<div class="container">
-    <h2>🌀 Breathe to the Beat 🌀</h2>
-    <div id="bubble"></div>
+<div class="game-container">
+    <h1>Mindful Breathing Exercise</h1>
     
-    <p id="instruction">Inhale... 🌬️</p>
-    <p id="feedback"></p>
-    <p class="score">Press <strong>Spacebar</strong> at the right time!</p>
-    <p class="score">Score: <span id="score">0</span></p>
+    <div class="breath-circle" id="breathCircle"></div>
+    
+    <p class="instructions" id="instructions">Press Start to begin</p>
+    <p class="feedback" id="feedback"></p>
+    
+    <div class="score-display">
+        <span>Score: </span>
+        <span id="score">0</span>
+        <span> | Streak: </span>
+        <span id="streak">0</span>
+    </div>
+    
+    <div class="controls">
+        <button id="startBtn">Start</button>
+        <button id="resetBtn">Reset</button>
+    </div>
+    
+    <div class="particles" id="particles"></div>
 </div>
 
 <script>
-    const bubble = document.getElementById('bubble');
-    const instruction = document.getElementById('instruction');
+    const breathCircle = document.getElementById('breathCircle');
+    const instructions = document.getElementById('instructions');
     const feedback = document.getElementById('feedback');
     const scoreDisplay = document.getElementById('score');
+    const streakDisplay = document.getElementById('streak');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const particlesContainer = document.getElementById('particles');
 
-    let growing = true;
     let score = 0;
-    let cycleStartTime = Date.now();
+    let streak = 0;
+    let isBreathingIn = true;
+    let isRunning = false;
+    let cycleStartTime;
+    let breathInterval;
+    let particlesInterval;
+
+    function createParticle() {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random size between 2px and 6px
+        const size = Math.random() * 4 + 2;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random position
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.bottom = `-10px`;
+        
+        // Random animation duration
+        const duration = Math.random() * 10 + 10;
+        particle.style.animationDuration = `${duration}s`;
+        
+        // Random delay
+        particle.style.animationDelay = `${Math.random() * 5}s`;
+        
+        particlesContainer.appendChild(particle);
+        
+        // Remove particle after animation completes
+        setTimeout(() => {
+            particle.remove();
+        }, duration * 1000);
+    }
+
+    function startParticles() {
+        particlesInterval = setInterval(createParticle, 300);
+    }
+
+    function stopParticles() {
+        clearInterval(particlesInterval);
+    }
 
     function breathe() {
-        if (growing) {
-            bubble.style.transform = 'scale(2)';
-            instruction.textContent = 'Inhale... 🌬️';
+        if (isBreathingIn) {
+            // Inhale phase
+            breathCircle.style.transform = 'scale(1.8)';
+            breathCircle.style.backgroundColor = 'radial-gradient(circle at 30% 30%, #a1c4fd, #c2e9fb)';
+            breathCircle.classList.add('active');
+            instructions.textContent = 'Breathe In... 🌬️';
+            feedback.textContent = '';
         } else {
-            bubble.style.transform = 'scale(1)';
-            instruction.textContent = 'Exhale... 😮‍💨';
+            // Exhale phase
+            breathCircle.style.transform = 'scale(1)';
+            breathCircle.style.backgroundColor = 'radial-gradient(circle at 30% 30%, #fbc2eb, #a6c1ee)';
+            breathCircle.classList.remove('active');
+            instructions.textContent = 'Breathe Out... 😮‍💨';
         }
-        growing = !growing;
+        
+        isBreathingIn = !isBreathingIn;
         cycleStartTime = Date.now();
     }
 
-    breathe();
-    setInterval(breathe, 4000);
+    function startGame() {
+        if (isRunning) return;
+        
+        isRunning = true;
+        startBtn.textContent = 'Pause';
+        score = 0;
+        streak = 0;
+        updateDisplays();
+        startParticles();
+        
+        // Start with breathe in
+        isBreathingIn = true;
+        breathe();
+        
+        // Set up breathing cycle (4 seconds inhale, 4 seconds exhale)
+        breathInterval = setInterval(breathe, 8000);
+        
+        // Add keyboard control
+        document.addEventListener('keydown', handleKeyPress);
+    }
 
-    document.addEventListener('keydown', (e) => {
+    function pauseGame() {
+        if (!isRunning) return;
+        
+        isRunning = false;
+        startBtn.textContent = 'Resume';
+        clearInterval(breathInterval);
+        stopParticles();
+        breathCircle.style.transform = 'scale(1)';
+        breathCircle.classList.remove('active');
+        instructions.textContent = 'Paused';
+        
+        // Remove keyboard listener
+        document.removeEventListener('keydown', handleKeyPress);
+    }
+
+    function resetGame() {
+        pauseGame();
+        startBtn.textContent = 'Start';
+        score = 0;
+        streak = 0;
+        updateDisplays();
+        instructions.textContent = 'Press Start to begin';
+        feedback.textContent = '';
+    }
+
+    function handleKeyPress(e) {
         if (e.code === 'Space') {
-            const now = Date.now();
-            const elapsed = (now - cycleStartTime) % 4000;
-            const timing = growing ? elapsed : 4000 - elapsed;
+            e.preventDefault();
+            checkTiming();
+        }
+    }
 
-            if (timing < 400 || timing > 3600) {
-                score += 1;
-                feedback.textContent = "🎯 Perfect!";
-                feedback.style.color = "#90f0e8";
-            } else {
-                feedback.textContent = "❌ Missed the rhythm!";
-                feedback.style.color = "#ff8888";
-                score = Math.max(0, score - 1);
-            }
-            scoreDisplay.textContent = score;
+    function checkTiming() {
+        if (!isRunning) return;
+        
+        const now = Date.now();
+        const cycleTime = (now - cycleStartTime) % 8000;
+        const isInhalePhase = cycleTime < 4000;
+        
+        // Perfect timing is within 500ms of transition
+        const isPerfectTiming = 
+            (isInhalePhase && cycleTime > 3500) || 
+            (!isInhalePhase && cycleTime > 7500 || cycleTime < 500);
+        
+        if (isPerfectTiming) {
+            score += 10;
+            streak += 1;
+            feedback.textContent = "Perfect! +10 🎯";
+            feedback.style.color = "#90f0e8";
+            
+            // Add visual effect for perfect timing
+            breathCircle.style.boxShadow = '0 0 80px rgba(161, 196, 253, 0.9)';
+            setTimeout(() => {
+                breathCircle.style.boxShadow = '0 0 40px rgba(161, 196, 253, 0.6)';
+            }, 300);
+        } else {
+            streak = 0;
+            feedback.textContent = "Missed the rhythm!";
+            feedback.style.color = "#ff8888";
+        }
+        
+        updateDisplays();
+    }
+
+    function updateDisplays() {
+        scoreDisplay.textContent = score;
+        streakDisplay.textContent = streak;
+        
+        // Bonus for streaks
+        if (streak >= 3) {
+            streakDisplay.style.color = "#90f0e8";
+            streakDisplay.style.fontWeight = "bold";
+        } else {
+            streakDisplay.style.color = "white";
+            streakDisplay.style.fontWeight = "normal";
+        }
+    }
+
+    // Event listeners
+    startBtn.addEventListener('click', () => {
+        if (isRunning) {
+            pauseGame();
+        } else {
+            startGame();
         }
     });
+
+    resetBtn.addEventListener('click', resetGame);
+
+    // Initialize
+    breathCircle.style.transition = 'all 4s cubic-bezier(0.25, 1, 0.5, 1)';
+    breathCircle.style.animation = 'pulse 3s infinite';
 </script>
 {% endblock %}

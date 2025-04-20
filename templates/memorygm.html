@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% block title %}Memory Flip - Mindful Pairs{% endblock %}
+
+{% block body %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='nav.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylehh.css') }}">
+</head>
+
+<style>
+    body {
+        background: #121212;
+        font-family: 'Poppins', sans-serif;
+        color: #e0e0e0;
+    }
+    
+    .game-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    h1 {
+        color: #bb86fc;
+        margin-bottom: 20px;
+        text-shadow: 0 0 10px rgba(187, 134, 252, 0.3);
+    }
+    
+    .stats {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 20px;
+        background: #1e1e1e;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    
+    .memory-board {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        perspective: 1000px;
+        margin-bottom: 20px;
+    }
+    
+    .card {
+        height: 120px;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.5s;
+        cursor: pointer;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    
+    .card-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2rem;
+    }
+    
+    .card-front {
+        background: linear-gradient(135deg, #bb86fc, #3700b3);
+        color: white;
+        transform: rotateY(180deg);
+    }
+    
+    .card-back {
+        background: #1e1e1e;
+        border: 2px solid #bb86fc;
+    }
+    
+    .card.flipped {
+        transform: rotateY(180deg);
+    }
+    
+    .card.matched {
+        transform: rotateY(180deg);
+        opacity: 0.7;
+        cursor: default;
+        box-shadow: 0 0 15px rgba(187, 134, 252, 0.5);
+    }
+    
+    .controls {
+        margin-top: 20px;
+    }
+    
+    button {
+        background: #bb86fc;
+        color: #121212;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.3s;
+        font-weight: 500;
+    }
+    
+    button:hover {
+        background: #9a67ea;
+        transform: translateY(-2px);
+    }
+    
+    .celebration {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.9);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 2rem;
+        display: none;
+        z-index: 100;
+        text-align: center;
+    }
+    
+    .mental-tip {
+        margin-top: 20px;
+        font-style: italic;
+        color: #03dac6;
+        max-width: 80%;
+        line-height: 1.5;
+    }
+    
+    #playAgainBtn {
+        margin-top: 30px;
+        background: #03dac6;
+        color: #121212;
+    }
+    
+    #playAgainBtn:hover {
+        background: #018786;
+    }
+</style>
+
+<div class="game-container">
+    <h1>Mindful Memory Flip</h1>
+    
+    <div class="stats">
+        <div>Moves: <span id="moves">0</span></div>
+        <div>Pairs Found: <span id="pairs">0</span>/8</div>
+        <div>Time: <span id="time">0</span>s</div>
+    </div>
+    
+    <div class="memory-board" id="memoryBoard">
+        <!-- Cards will be generated here -->
+    </div>
+    
+    <div class="controls">
+        <button id="resetBtn">New Game</button>
+    </div>
+</div>
+
+<div class="celebration" id="celebration">
+    <h2>Congratulations! 🎉</h2>
+    <p>You completed the game in <span id="finalMoves">0</span> moves and <span id="finalTime">0</span> seconds!</p>
+    <p class="mental-tip">"Memory games like this help strengthen neural connections and can improve your cognitive flexibility."</p>
+    <button id="playAgainBtn">Play Again</button>
+</div>
+
+<script>
+    // Mental wellness themed emoji pairs
+    const cardSymbols = ['🧘', '🌱', '🌞', '💤', '🍎', '🚶', '📖', '🎨'];
+    const cards = [...cardSymbols, ...cardSymbols];
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let moves = 0;
+    let timer;
+    let seconds = 0;
+    let gameActive = false;
+
+    // DOM elements
+    const memoryBoard = document.getElementById('memoryBoard');
+    const movesDisplay = document.getElementById('moves');
+    const pairsDisplay = document.getElementById('pairs');
+    const timeDisplay = document.getElementById('time');
+    const resetBtn = document.getElementById('resetBtn');
+    const celebration = document.getElementById('celebration');
+    const finalMoves = document.getElementById('finalMoves');
+    const finalTime = document.getElementById('finalTime');
+    const playAgainBtn = document.getElementById('playAgainBtn');
+
+    // Initialize game
+    function initGame() {
+        // Reset game state
+        flippedCards = [];
+        matchedPairs = 0;
+        moves = 0;
+        seconds = 0;
+        gameActive = true;
+        
+        // Update displays
+        movesDisplay.textContent = moves;
+        pairsDisplay.textContent = `${matchedPairs}/8`;
+        timeDisplay.textContent = seconds;
+        
+        // Clear board
+        memoryBoard.innerHTML = '';
+        
+        // Shuffle cards
+        const shuffledCards = shuffleArray([...cards]);
+        
+        // Create cards
+        shuffledCards.forEach((symbol, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.dataset.symbol = symbol;
+            card.dataset.index = index;
+            
+            card.innerHTML = `
+                <div class="card-face card-back"></div>
+                <div class="card-face card-front">${symbol}</div>
+            `;
+            
+            card.addEventListener('click', flipCard);
+            memoryBoard.appendChild(card);
+        });
+        
+        // Start timer
+        clearInterval(timer);
+        timer = setInterval(updateTimer, 1000);
+        
+        // Hide celebration
+        celebration.style.display = 'none';
+    }
+
+    // Shuffle array
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Flip card
+    function flipCard() {
+        if (!gameActive) return;
+        
+        // Don't allow flipping if already flipped or matched
+        if (this.classList.contains('flipped') || 
+            this.classList.contains('matched') || 
+            flippedCards.length >= 2) {
+            return;
+        }
+        
+        // Flip the card
+        this.classList.add('flipped');
+        flippedCards.push(this);
+        
+        // Check for match if two cards are flipped
+        if (flippedCards.length === 2) {
+            moves++;
+            movesDisplay.textContent = moves;
+            
+            if (flippedCards[0].dataset.symbol === flippedCards[1].dataset.symbol) {
+                // Match found
+                flippedCards.forEach(card => {
+                    card.classList.add('matched');
+                    card.style.boxShadow = '0 0 15px rgba(187, 134, 252, 0.7)';
+                });
+                matchedPairs++;
+                pairsDisplay.textContent = `${matchedPairs}/8`;
+                flippedCards = [];
+                
+                // Check for game completion
+                if (matchedPairs === 8) {
+                    endGame();
+                }
+            } else {
+                // No match
+                setTimeout(() => {
+                    flippedCards.forEach(card => card.classList.remove('flipped'));
+                    flippedCards = [];
+                }, 1000);
+            }
+        }
+    }
+
+    // Update timer
+    function updateTimer() {
+        if (!gameActive) return;
+        seconds++;
+        timeDisplay.textContent = seconds;
+    }
+
+    // End game
+    function endGame() {
+        gameActive = false;
+        clearInterval(timer);
+        
+        // Show celebration
+        finalMoves.textContent = moves;
+        finalTime.textContent = seconds;
+        celebration.style.display = 'flex';
+    }
+
+    // Event listeners
+    resetBtn.addEventListener('click', initGame);
+    playAgainBtn.addEventListener('click', initGame);
+
+    // Start the game
+    initGame();
+</script>
+{% endblock %}
