@@ -10,10 +10,8 @@
     {% if bookings %}
         <ul>
             {% for booking in bookings %}
-                <li>
-                    <strong>{{ booking['professional'] }}</strong> - {{ booking['time'] }}
-                </li>
-            {% endfor %}
+            <li><strong>{{ booking['doctor_name'] }}</strong> - {{ booking['time_slot'] }}</li>
+        {% endfor %}        
         </ul>
     {% else %}
         <p>No bookings yet.</p>

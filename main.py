@@ -434,12 +434,30 @@ def book():
             flash("Please select a professional and time slot.", "danger")
             return redirect(url_for('book'))
 
-        for booking in bookings:
-            if booking['professional'] == selected_professional_name and booking['time_slot'] == time_slot:
-                flash("This time slot is already booked.", "danger")
-                return redirect(url_for('book'))
+        # Get current user ID
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT id FROM user WHERE email = %s", (session['email'],))
+        user = cursor.fetchone()
+        if not user:
+            flash("User not found.", "danger")
+            cursor.close()
+            return redirect(url_for('book'))
+        user_id = user[0]
 
-        bookings.append({"user": session['email'], "professional": selected_professional_name, "time_slot": time_slot})
+        # Check for existing booking
+        cursor.execute("SELECT * FROM bookings WHERE doctor_name = %s AND time_slot = %s", (selected_professional_name, time_slot))
+        existing = cursor.fetchone()
+        if existing:
+            flash("This time slot is already booked.", "danger")
+            cursor.close()
+            return redirect(url_for('book'))
+
+        # Insert booking
+        cursor.execute("INSERT INTO bookings (user_id, doctor_name, time_slot, booked_at) VALUES (%s, %s, %s, NOW())",
+                       (user_id, selected_professional_name, time_slot))
+        mysql.connection.commit()
+        cursor.close()
+
         flash("Booking successful!", "success")
         return redirect(url_for('view_bookings'))
 
@@ -447,12 +465,23 @@ def book():
     selected_professional = next((prof for prof in profs if prof['name'] == selected_professional_name), None)
     return render_template('book.html', professionals=profs, selected_professional=selected_professional)
 
+
 @app.route('/bookings')
 def view_bookings():
     if 'email' not in session:
         return redirect(url_for('login_page'))
-    user_bookings = [b for b in bookings if b['user'] == session.get('email')]
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("SELECT id FROM user WHERE email = %s", (session['email'],))
+    user = cursor.fetchone()
+    if not user:
+        flash("User not found", "danger")
+        return redirect(url_for('login_page'))
+
+    cursor.execute("SELECT doctor_name, time_slot FROM bookings WHERE user_id = %s", (user['id'],))
+    user_bookings = cursor.fetchall()
     return render_template('bookings.html', bookings=user_bookings)
+
 
 @app.route('/delete_comment/<int:post_id>/<int:comment_index>', methods=["POST"])
 def delete_comment(post_id, comment_index):
