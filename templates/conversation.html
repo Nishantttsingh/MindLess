@@ -5,108 +5,368 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Mental Health Assistant</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #000000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #0a1a2a 100%);
             color: #FFFFFF;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .header {
             text-align: center;
-            margin: 50px;
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .header h2 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00BFFF, #00FFAA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.3);
+        }
+
+        .header p {
+            color: #CCCCCC;
+            font-size: 1rem;
         }
 
         #chatbox {
-            width: 80%;
-            max-width: 600px;
+            width: 90%;
+            max-width: 700px;
             margin: auto;
-            background-color: #0A0A0A;
-            padding: 20px;
-            border-radius: 10px;
+            background: rgba(10, 10, 10, 0.8);
+            padding: 25px;
+            border-radius: 20px;
             border: 2px solid #00BFFF;
-            box-shadow: 0px 0px 15px #00BFFF;
+            box-shadow: 0 0 25px rgba(0, 191, 255, 0.4);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #chatbox::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 191, 255, 0.1) 0%, transparent 70%);
+            z-index: -1;
         }
 
         #messages {
             border: 2px solid #00BFFF;
-            padding: 10px;
-            height: 300px;
-            overflow-y: scroll;
+            padding: 15px;
+            height: 350px;
+            overflow-y: auto;
             text-align: left;
-            background-color: #121212;
-            border-radius: 5px;
-            box-shadow: inset 0 0 10px #00BFFF;
+            background-color: rgba(18, 18, 18, 0.9);
+            border-radius: 15px;
+            box-shadow: inset 0 0 15px rgba(0, 191, 255, 0.3);
             color: white;
+            margin-bottom: 20px;
+            scroll-behavior: smooth;
         }
 
-        input {
-            width: calc(100% - 24px);
-            padding: 10px;
-            margin-top: 10px;
-            border: 1px solid #00BFFF;
-            border-radius: 5px;
-            background-color: #1E1E1E;
-            color: white;
-            transition: all 0.3s ease-in-out;
-            outline: none;
+        /* Custom scrollbar */
+        #messages::-webkit-scrollbar {
+            width: 8px;
         }
 
-        button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border: none;
-            background-color: #00BFFF;
+        #messages::-webkit-scrollbar-track {
+            background: rgba(0, 191, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        #messages::-webkit-scrollbar-thumb {
+            background: #00BFFF;
+            border-radius: 10px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+            line-height: 1.4;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #00BFFF, #0080FF);
             color: white;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
             box-shadow: 0 4px 8px rgba(0, 191, 255, 0.3);
         }
 
+        .ai-message {
+            background: linear-gradient(135deg, #2A2A2A, #1A1A1A);
+            color: white;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+            border: 1px solid rgba(0, 191, 255, 0.3);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .message strong {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #00BFFF;
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #00BFFF;
+            border-radius: 50px;
+            background-color: rgba(30, 30, 30, 0.8);
+            color: white;
+            transition: all 0.3s ease-in-out;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            box-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+            background-color: rgba(40, 40, 40, 0.8);
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            background: linear-gradient(135deg, #00BFFF, #0080FF);
+            color: white;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 191, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
         button:hover {
-            background-color: #00A6D6;
-            box-shadow: 0 0 20px #00BFFF;
-            transform: scale(1.05);
+            background: linear-gradient(135deg, #00A6D6, #0077CC);
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.6);
+            transform: translateY(-2px);
         }
 
         .mic-button {
-            background-color: red;
-            width: 50px;
-            height: 50px;
+            background: linear-gradient(135deg, #FF416C, #FF4B2B);
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
-            display: inline-block;
-            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             color: white;
             font-size: 24px;
-            line-height: 50px;
-            text-align: center;
+            box-shadow: 0 4px 12px rgba(255, 65, 108, 0.4);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .mic-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 65, 108, 0.6);
+        }
+
+        .mic-button.listening {
             animation: pulse 1.5s infinite;
+            box-shadow: 0 0 0 10px rgba(255, 65, 108, 0.2);
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 5px red; }
-            50% { box-shadow: 0 0 15px red; }
-            100% { box-shadow: 0 0 5px red; }
+            0% { box-shadow: 0 0 0 0 rgba(255, 65, 108, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 65, 108, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 65, 108, 0); }
         }
 
         .status {
-            margin-top: 10px;
+            margin-top: 15px;
             font-size: 14px;
             color: #00FF00;
+            text-align: center;
+            height: 20px;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .suggestion-chip {
+            background: rgba(0, 191, 255, 0.2);
+            border: 1px solid rgba(0, 191, 255, 0.5);
+            color: #CCCCCC;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .suggestion-chip:hover {
+            background: rgba(0, 191, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-element {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: rgba(0, 191, 255, 0.5);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-20px) translateX(10px); }
+            50% { transform: translateY(-40px) translateX(-10px); }
+            75% { transform: translateY(-20px) translateX(-20px); }
+            100% { transform: translateY(0) translateX(0); }
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(0, 191, 255, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(0, 191, 255, 0.3);
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-top: 5px;
+            text-align: right;
         }
     </style>
 </head>
 <body>
-    <h2>AI Mental Health Assistant</h2>
+    <div class="floating-elements" id="floatingElements"></div>
+    
+    <div class="header">
+        <h2>AI Mental Health Assistant</h2>
+        <p>Your compassionate companion for emotional support and guidance</p>
+    </div>
+    
     <div id="chatbox">
-        <div id="messages"></div>
-        <input type="text" id="userInput" placeholder="Type or Speak a message..." />
-        <button onclick="sendMessage()">Send</button>
-        <div class="mic-button" onclick="toggleVoiceRecognition()">🎤</div>
+        <div id="messages">
+            <div class="welcome-message">
+                <p>Hello! I'm here to listen and provide support. How are you feeling today?</p>
+            </div>
+        </div>
+        
+        <div class="suggestions">
+            <div class="suggestion-chip" onclick="insertSuggestion('I\'m feeling anxious today')">I'm feeling anxious</div>
+            <div class="suggestion-chip" onclick="insertSuggestion('I need some motivation')">I need motivation</div>
+            <div class="suggestion-chip" onclick="insertSuggestion('I\'m feeling stressed')">I'm feeling stressed</div>
+            <div class="suggestion-chip" onclick="insertSuggestion('Can you help me relax?')">Help me relax</div>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type or speak your message..." />
+            <button onclick="sendMessage()">
+                <span>Send</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <div class="mic-button" id="micButton" onclick="toggleVoiceRecognition()">🎤</div>
+        </div>
+        
         <div id="status" class="status"></div>
     </div>
 
     <script>
+        // Create floating background elements
+        function createFloatingElements() {
+            const container = document.getElementById('floatingElements');
+            for (let i = 0; i < 20; i++) {
+                const element = document.createElement('div');
+                element.classList.add('floating-element');
+                element.style.left = `${Math.random() * 100}%`;
+                element.style.top = `${Math.random() * 100}%`;
+                element.style.animationDelay = `${Math.random() * 15}s`;
+                element.style.width = `${Math.random() * 6 + 4}px`;
+                element.style.height = element.style.width;
+                container.appendChild(element);
+            }
+        }
+
         let recognition;
         let isListening = false;
         let voices = [];
@@ -139,14 +399,29 @@
             recognition.lang = "en-US";
             recognition.interimResults = false;
 
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('micButton').classList.add('listening');
+                updateStatus("Listening...");
+            };
+
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
                 document.getElementById("userInput").value = transcript;
+                updateStatus("Processing...");
                 sendMessage();
             };
 
+            recognition.onerror = function(event) {
+                updateStatus("Error: " + event.error);
+                stopVoiceRecognition();
+            };
+
+            recognition.onend = function() {
+                stopVoiceRecognition();
+            };
+
             recognition.start();
-            isListening = true;
         }
 
         function stopVoiceRecognition() {
@@ -154,6 +429,17 @@
                 recognition.stop();
             }
             isListening = false;
+            document.getElementById('micButton').classList.remove('listening');
+            updateStatus("");
+        }
+
+        function updateStatus(message) {
+            document.getElementById("status").textContent = message;
+        }
+
+        function insertSuggestion(text) {
+            document.getElementById("userInput").value = text;
+            document.getElementById("userInput").focus();
         }
 
         async function sendMessage() {
@@ -161,13 +447,23 @@
             if (!userInput) return;
 
             const messagesDiv = document.getElementById("messages");
-            const userMessage = document.createElement("p");
-            userMessage.innerHTML = `<strong>You:</strong> ${userInput}`;
+            
+            // Add user message
+            const userMessage = document.createElement("div");
+            userMessage.classList.add("message", "user-message");
+            userMessage.innerHTML = `<strong>You</strong>${userInput}<div class="message-time">${getCurrentTime()}</div>`;
             messagesDiv.appendChild(userMessage);
-
-            const aiMessage = document.createElement("p");
-            aiMessage.innerHTML = `<strong>AI:</strong> <i>Thinking...</i>`;
+            
+            // Clear input
+            document.getElementById("userInput").value = "";
+            
+            // Add AI "thinking" message
+            const aiMessage = document.createElement("div");
+            aiMessage.classList.add("message", "ai-message");
+            aiMessage.innerHTML = `<strong>AI Assistant</strong><span id="typingText">Thinking</span><div class="typing-indicator"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
             messagesDiv.appendChild(aiMessage);
+            
+            // Scroll to bottom
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
             try {
@@ -178,36 +474,46 @@
                 });
 
                 const data = await response.json();
-                aiMessage.innerHTML = `<strong>AI:</strong> ${data.reply}`;
+                
+                // Update AI message with response
+                document.getElementById("typingText").textContent = data.reply;
+                document.querySelector(".typing-indicator").style.display = "none";
+                
+                // Add timestamp
+                aiMessage.innerHTML = `<strong>AI Assistant</strong>${data.reply}<div class="message-time">${getCurrentTime()}</div>`;
+                
+                // Speak the response
                 setTimeout(() => speakText(data.reply), 800);
             } catch (error) {
-                aiMessage.innerHTML = `<strong>AI:</strong> Error fetching response.`;
+                aiMessage.innerHTML = `<strong>AI Assistant</strong>Sorry, I'm having trouble connecting right now. Please try again.<div class="message-time">${getCurrentTime()}</div>`;
             }
-            document.getElementById("userInput").value = "";
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
         }
 
         function speakText(text) {
-    // Stop any ongoing speech before speaking new response
-    if (speechSynthesis.speaking) {
-        speechSynthesis.cancel();
-    }
+            // Stop any ongoing speech before speaking new response
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
 
-    const utterance = new SpeechSynthesisUtterance(
-        text.replace(/, /g, ", ... ").replace(/\./g, ". ... ")
-    );
+            const utterance = new SpeechSynthesisUtterance(
+                text.replace(/, /g, ", ... ").replace(/\./g, ". ... ")
+            );
 
-    let selectedVoice = voices.find(voice =>
-        voice.name.includes("Google US English") || voice.name.includes("Microsoft Zira")
-    );
-    if (selectedVoice) utterance.voice = selectedVoice;
+            let selectedVoice = voices.find(voice =>
+                voice.name.includes("Google US English") || voice.name.includes("Microsoft Zira")
+            );
+            if (selectedVoice) utterance.voice = selectedVoice;
 
-    utterance.rate = 0.92;   // More natural pace
-    utterance.pitch = 1.07;  // Slightly expressive
+            utterance.rate = 0.92;   // More natural pace
+            utterance.pitch = 1.07;  // Slightly expressive
 
-    speechSynthesis.speak(utterance);
-}
-
-
+            speechSynthesis.speak(utterance);
+        }
 
         document.getElementById("userInput").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
@@ -216,7 +522,12 @@
             }
         });
 
-        loadVoices();
+        // Initialize the page
+        window.onload = function() {
+            loadVoices();
+            createFloatingElements();
+            document.getElementById("userInput").focus();
+        };
     </script>
 </body>
 </html>
