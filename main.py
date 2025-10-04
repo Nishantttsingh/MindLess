@@ -11,14 +11,12 @@ load_dotenv(encoding='utf-8')
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise ValueError("No GROQ_API_KEY set in .env file")
-
+ 
 client = groq.Client(api_key=GROQ_API_KEY)
 
-# ----------------- App Initialization -----------------
 app = Flask(__name__)
 CORS(app)
 
-# Secret key for sessions
 app.secret_key = 'your_secret_key'
 
 # MySQL configuration
@@ -182,20 +180,61 @@ def conversation_page():
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json()
-    user_message = data.get("message", "").lower().strip()
+    user_message = data.get("message", "").strip()
 
-    if user_message in ["hi", "hello", "hey"]:
+    if not user_message:
+        return jsonify({"reply": "Please enter a message."})
+
+    # Handle greetings
+    if user_message.lower() in ["hi", "hello", "hey"]:
         ai_reply = "Hey there! How's it going?"
-    else:
-        conversation_history.append({"role": "user", "content": data["message"]})
+        conversation_history.append({"role": "user", "content": user_message})
+        conversation_history.append({"role": "assistant", "content": ai_reply})
+        return jsonify({"reply": ai_reply})
+
+    try:
+        # Add user message to conversation history
+        conversation_history.append({"role": "user", "content": user_message})
+
+        # Call Groq API with updated model
         response = client.chat.completions.create(
-            model="llama3-70b-8192",
-            messages=conversation_history
+            model="llama-3.1-8b-instant",  # Updated model - you can also try "mixtral-8x7b-32768" or "gemma2-9b-it"
+            messages=conversation_history,
+            max_tokens=150,
+            temperature=0.7
         )
+
+        # Correct way to extract the response content
         ai_reply = response.choices[0].message.content
+
+        if not ai_reply:
+            ai_reply = "Sorry, I couldn't generate a response at the moment."
+
+        # Add assistant reply to conversation history
         conversation_history.append({"role": "assistant", "content": ai_reply})
 
-    return jsonify({"reply": ai_reply})
+        # Limit conversation history to prevent it from growing too large
+        if len(conversation_history) > 20:
+            # Keep system message and last 19 exchanges
+            system_msg = conversation_history[0]
+            recent_history = conversation_history[-19:]
+            conversation_history.clear()
+            conversation_history.append(system_msg)
+            conversation_history.extend(recent_history)
+
+        return jsonify({"reply": ai_reply})
+
+    except Exception as e:
+        print(f"Error from Groq API: {str(e)}")
+        # Fallback response in case of API error
+        fallback_responses = [
+            "I'm having trouble connecting right now. Please try again in a moment.",
+            "It seems I'm experiencing some technical difficulties. Let's try that again.",
+            "I apologize, but I'm unable to respond properly at the moment. Please try again shortly."
+        ]
+        import random
+        ai_reply = random.choice(fallback_responses)
+        return jsonify({"reply": ai_reply})
 
 @app.route("/profile/<username>")
 def profile(username):
@@ -278,7 +317,6 @@ def profile(username):
         return redirect(url_for('index'))
     finally:
         cur.close()
-from werkzeug.security import generate_password_hash, check_password_hash
 
 @app.route("/editp", methods=["GET", "POST"])
 def edit_profile():
@@ -465,7 +503,6 @@ def book():
     selected_professional = next((prof for prof in profs if prof['name'] == selected_professional_name), None)
     return render_template('book.html', professionals=profs, selected_professional=selected_professional)
 
-
 @app.route('/bookings')
 def view_bookings():
     if 'email' not in session:
@@ -481,7 +518,6 @@ def view_bookings():
     cursor.execute("SELECT doctor_name, time_slot FROM bookings WHERE user_id = %s", (user['id'],))
     user_bookings = cursor.fetchall()
     return render_template('bookings.html', bookings=user_bookings)
-
 
 @app.route('/delete_comment/<int:post_id>/<int:comment_index>', methods=["POST"])
 def delete_comment(post_id, comment_index):
