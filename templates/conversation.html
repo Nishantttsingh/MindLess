@@ -417,6 +417,36 @@
             box-shadow: 0 5px 15px rgba(0, 191, 255, 0.4);
         }
 
+        /* Language Selector */
+        .language-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+
+        .language-button {
+            background: rgba(0, 191, 255, 0.2);
+            border: 1px solid rgba(0, 191, 255, 0.5);
+            color: #CCCCCC;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .language-button.active {
+            background: rgba(0, 191, 255, 0.6);
+            color: white;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+        }
+
+        .language-button:hover {
+            background: rgba(0, 191, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
         /* Relaxing Background Bubbles */
         .floating-elements {
             position: fixed;
@@ -535,6 +565,11 @@
     </div>
     
     <div id="chatbox">
+        <div class="language-selector">
+            <div class="language-button active" id="englishBtn" onclick="setLanguage('en')">English</div>
+            <div class="language-button" id="hindiBtn" onclick="setLanguage('hi')">हिंदी (Hindi)</div>
+        </div>
+        
         <div id="messages">
             <div class="ai-message-container">
                 <div class="character-avatar happy">
@@ -553,7 +588,7 @@
             </div>
         </div>
         
-        <div class="suggestions">
+        <div class="suggestions" id="suggestionsContainer">
             <div class="suggestion-chip" onclick="insertSuggestion('I\'m feeling anxious today')">I'm feeling anxious</div>
             <div class="suggestion-chip" onclick="insertSuggestion('I need some motivation')">I need motivation</div>
             <div class="suggestion-chip" onclick="insertSuggestion('I\'m feeling stressed')">I'm feeling stressed</div>
@@ -576,6 +611,72 @@
     </div>
 
     <script>
+        // Language management
+        let currentLanguage = 'en';
+        const languageData = {
+            en: {
+                welcomeMessage: "Hello! I'm here to listen and provide support. How are you feeling today?",
+                suggestions: [
+                    { text: "I'm feeling anxious today", display: "I'm feeling anxious" },
+                    { text: "I need some motivation", display: "I need motivation" },
+                    { text: "I'm feeling stressed", display: "I'm feeling stressed" },
+                    { text: "Can you help me relax?", display: "Help me relax" }
+                ],
+                inputPlaceholder: "Type or speak your message...",
+                listeningStatus: "🎤 Listening... Speak now",
+                processingStatus: "⚡ Processing...",
+                errorStatus: "❌ Error: ",
+                characterName: "Mindful Mate"
+            },
+            hi: {
+                welcomeMessage: "नमस्ते! मैं यहां आपकी बात सुनने और सहायता प्रदान करने के लिए हूं। आज आप कैसा महसूस कर रहे हैं?",
+                suggestions: [
+                    { text: "आज मैं चिंतित महसूस कर रहा हूं", display: "मैं चिंतित हूं" },
+                    { text: "मुझे कुछ प्रेरणा की आवश्यकता है", display: "मुझे प्रेरणा चाहिए" },
+                    { text: "मैं तनाव महसूस कर रहा हूं", display: "मैं तनाव में हूं" },
+                    { text: "क्या आप मुझे आराम करने में मदद कर सकते हैं?", display: "मुझे आराम करने में मदद करें" }
+                ],
+                inputPlaceholder: "अपना संदेश टाइप करें या बोलें...",
+                listeningStatus: "🎤 सुन रहा हूं... बोलिए",
+                processingStatus: "⚡ प्रोसेसिंग...",
+                errorStatus: "❌ त्रुटि: ",
+                characterName: "माइंडफुल साथी"
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update UI elements
+            document.getElementById('englishBtn').classList.toggle('active', lang === 'en');
+            document.getElementById('hindiBtn').classList.toggle('active', lang === 'hi');
+            
+            // Update input placeholder
+            document.getElementById('userInput').placeholder = languageData[lang].inputPlaceholder;
+            
+            // Update suggestions
+            const suggestionsContainer = document.getElementById('suggestionsContainer');
+            suggestionsContainer.innerHTML = '';
+            
+            languageData[lang].suggestions.forEach(suggestion => {
+                const chip = document.createElement('div');
+                chip.classList.add('suggestion-chip');
+                chip.textContent = suggestion.display;
+                chip.onclick = () => insertSuggestion(suggestion.text);
+                suggestionsContainer.appendChild(chip);
+            });
+            
+            // Update welcome message if it's the first message
+            const messages = document.getElementById('messages');
+            if (messages.children.length === 1) {
+                const welcomeMessage = messages.querySelector('.message-content');
+                welcomeMessage.textContent = languageData[lang].welcomeMessage;
+                
+                const characterName = messages.querySelector('.character-name');
+                characterName.innerHTML = `${languageData[lang].characterName} <span class="expression-tag">😊 Ready to help!</span>`;
+            }
+        }
+
         // Create relaxing background bubbles
         function createRelaxingBubbles() {
             const container = document.getElementById('floatingElements');
@@ -617,7 +718,7 @@
             }
         }
 
-        // Existing chat functionality (unchanged)
+        // Voice recognition and chat functionality
         let recognition;
         let isListening = false;
         let voices = [];
@@ -640,31 +741,32 @@
         }
 
         function startVoiceRecognition() {
-            if (!('webkitSpeechRecognition' in window)) {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                 alert("Your browser does not support Speech Recognition. Please use Chrome or Edge.");
                 return;
             }
 
-            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
             recognition.continuous = false;
-            recognition.lang = "en-US";
+            recognition.lang = currentLanguage === 'en' ? "en-US" : "hi-IN";
             recognition.interimResults = false;
 
             recognition.onstart = function() {
                 isListening = true;
                 document.getElementById('micButton').classList.add('listening');
-                updateStatus("🎤 Listening... Speak now");
+                updateStatus(languageData[currentLanguage].listeningStatus);
             };
 
             recognition.onresult = function(event) {
                 const transcript = event.results[0][0].transcript;
                 document.getElementById("userInput").value = transcript;
-                updateStatus("⚡ Processing...");
+                updateStatus(languageData[currentLanguage].processingStatus);
                 sendMessage();
             };
 
             recognition.onerror = function(event) {
-                updateStatus("❌ Error: " + event.error);
+                updateStatus(languageData[currentLanguage].errorStatus + event.error);
                 stopVoiceRecognition();
             };
 
@@ -696,17 +798,23 @@
         function getCharacterExpression(message) {
             const lowerMessage = message.toLowerCase();
             
-            if (lowerMessage.includes('anxious') || lowerMessage.includes('worried') || lowerMessage.includes('scared')) {
+            if (lowerMessage.includes('anxious') || lowerMessage.includes('worried') || lowerMessage.includes('scared') ||
+                lowerMessage.includes('चिंतित') || lowerMessage.includes('घबराया') || lowerMessage.includes('डरा')) {
                 return { expression: "😌 Calm and understanding", animation: "sad" };
-            } else if (lowerMessage.includes('sad') || lowerMessage.includes('depressed') || lowerMessage.includes('unhappy')) {
+            } else if (lowerMessage.includes('sad') || lowerMessage.includes('depressed') || lowerMessage.includes('unhappy') ||
+                       lowerMessage.includes('उदास') || lowerMessage.includes('दुखी') || lowerMessage.includes('निराश')) {
                 return { expression: "🤗 Warm and comforting", animation: "sad" };
-            } else if (lowerMessage.includes('happy') || lowerMessage.includes('good') || lowerMessage.includes('great')) {
+            } else if (lowerMessage.includes('happy') || lowerMessage.includes('good') || lowerMessage.includes('great') ||
+                       lowerMessage.includes('खुश') || lowerMessage.includes('अच्छा') || lowerMessage.includes('बढ़िया')) {
                 return { expression: "🎉 Celebrating with you!", animation: "happy" };
-            } else if (lowerMessage.includes('stress') || lowerMessage.includes('overwhelmed')) {
+            } else if (lowerMessage.includes('stress') || lowerMessage.includes('overwhelmed') ||
+                       lowerMessage.includes('तनाव') || lowerMessage.includes('अभिभूत')) {
                 return { expression: "🌿 Peaceful and grounding", animation: "thinking" };
-            } else if (lowerMessage.includes('thank') || lowerMessage.includes('appreciate')) {
+            } else if (lowerMessage.includes('thank') || lowerMessage.includes('appreciate') ||
+                       lowerMessage.includes('धन्यवाद') || lowerMessage.includes('शुक्रिया')) {
                 return { expression: "😊 Happy to help!", animation: "excited" };
-            } else if (lowerMessage.includes('emergency') || lowerMessage.includes('help') || lowerMessage.includes('urgent')) {
+            } else if (lowerMessage.includes('emergency') || lowerMessage.includes('help') || lowerMessage.includes('urgent') ||
+                       lowerMessage.includes('आपातकाल') || lowerMessage.includes('मदद') || lowerMessage.includes('जरूरी')) {
                 return { expression: "🚨 Immediate support", animation: "thinking" };
             } else {
                 return { expression: "💭 Thinking carefully", animation: "thinking" };
@@ -747,7 +855,7 @@
             const characterBubble = document.createElement("div");
             characterBubble.classList.add("character-speech-bubble");
             characterBubble.innerHTML = `
-                <div class="character-name">Mindful Mate</div>
+                <div class="character-name">${languageData[currentLanguage].characterName}</div>
                 <div class="message-content">
                     <span id="typingText">Thinking</span>
                     <span class="typing-indicator">
@@ -767,43 +875,42 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
             try {
-                const response = await fetch("http://127.0.0.1:8000/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: userInput })
-                });
-
-                const data = await response.json();
+                // Simulate API response for demo purposes
+                // In a real implementation, you would call your backend API
+                const demoResponse = getDemoResponse(userInput, currentLanguage);
                 
                 // Get character expression based on response
-                const expression = getCharacterExpression(data.reply);
+                const expression = getCharacterExpression(demoResponse);
                 
                 // Update character message with response
-                characterBubble.innerHTML = `
-                    <div class="character-name">
-                        Mindful Mate 
-                        <span class="expression-tag">${expression.expression}</span>
-                    </div>
-                    <div class="message-content">${data.reply}</div>
-                    <div class="message-time">${getCurrentTime()}</div>
-                `;
-                
-                // Update character animation
-                characterAvatar.className = "character-avatar " + expression.animation;
-                
-                // Speak the response
                 setTimeout(() => {
-                    characterAvatar.classList.add("talking");
-                    speakText(data.reply);
+                    characterBubble.innerHTML = `
+                        <div class="character-name">
+                            ${languageData[currentLanguage].characterName}
+                            <span class="expression-tag">${expression.expression}</span>
+                        </div>
+                        <div class="message-content">${demoResponse}</div>
+                        <div class="message-time">${getCurrentTime()}</div>
+                    `;
+                    
+                    // Update character animation
+                    characterAvatar.className = "character-avatar " + expression.animation;
+                    
+                    // Speak the response
                     setTimeout(() => {
-                        characterAvatar.classList.remove("talking");
-                        characterAvatar.classList.add(expression.animation);
-                    }, 2000);
-                }, 800);
+                        characterAvatar.classList.add("talking");
+                        speakText(demoResponse);
+                        setTimeout(() => {
+                            characterAvatar.classList.remove("talking");
+                            characterAvatar.classList.add(expression.animation);
+                        }, 2000);
+                    }, 800);
+                }, 1500);
+                
             } catch (error) {
                 characterBubble.innerHTML = `
                     <div class="character-name">
-                        Mindful Mate 
+                        ${languageData[currentLanguage].characterName}
                         <span class="expression-tag">😔 Connection issue</span>
                     </div>
                     <div class="message-content">Sorry, I'm having trouble connecting right now. Please try again.</div>
@@ -811,6 +918,29 @@
                 `;
                 characterAvatar.className = "character-avatar sad";
             }
+        }
+
+        // Demo response function - replace with actual API call
+        function getDemoResponse(userInput, language) {
+            const responses = {
+                en: [
+                    "I understand how you're feeling. Let's take a moment to breathe together.",
+                    "It's completely normal to feel this way sometimes. Would you like to try a simple relaxation exercise?",
+                    "Thank you for sharing that with me. Remember, it's okay to not be okay sometimes.",
+                    "I'm here to support you. Let's work through this together, one step at a time.",
+                    "Your feelings are valid. Would you like to talk more about what's on your mind?"
+                ],
+                hi: [
+                    "मैं समझता हूं कि आप कैसा महसूस कर रहे हैं। चलिए एक साथ एक पल के लिए सांस लेते हैं।",
+                    "कभी-कभी इस तरह महसूस करना पूरी तरह से सामान्य है। क्या आप एक सरल विश्राम अभ्यास आजमाना चाहेंगे?",
+                    "मुझसे यह साझा करने के लिए धन्यवाद। याद रखें, कभी-कभी ठीक नहीं होना भी ठीक है।",
+                    "मैं आपका समर्थन करने के लिए यहां हूं। चलिए इस पर एक साथ काम करते हैं, एक कदम बारी।",
+                    "आपकी भावनाएं मान्य हैं। क्या आप अपने मन में जो चल रहा है, उसके बारे में और बात करना चाहेंगे?"
+                ]
+            };
+            
+            const langResponses = responses[language] || responses.en;
+            return langResponses[Math.floor(Math.random() * langResponses.length)];
         }
 
         function getCurrentTime() {
@@ -827,13 +957,22 @@
                 text.replace(/, /g, ", ... ").replace(/\./g, ". ... ")
             );
 
-            let selectedVoice = voices.find(voice =>
-                voice.name.includes("Google US English") || voice.name.includes("Microsoft Zira")
-            );
+            let selectedVoice;
+            if (currentLanguage === 'hi') {
+                selectedVoice = voices.find(voice => 
+                    voice.lang.includes('hi') || voice.name.includes('Hindi')
+                );
+            } else {
+                selectedVoice = voices.find(voice =>
+                    voice.name.includes("Google US English") || voice.name.includes("Microsoft Zira")
+                );
+            }
+            
             if (selectedVoice) utterance.voice = selectedVoice;
 
             utterance.rate = 0.92;
             utterance.pitch = 1.07;
+            utterance.lang = currentLanguage === 'hi' ? 'hi-IN' : 'en-US';
 
             speechSynthesis.speak(utterance);
         }
