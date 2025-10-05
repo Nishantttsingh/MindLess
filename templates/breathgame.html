@@ -9,171 +9,275 @@
 </head>
 <style>
     body {
-        background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-        font-family: 'Poppins', sans-serif;
-        overflow: hidden;
-        height: 100vh;
+        background: linear-gradient(135deg, #000000 0%, #0a1a2a 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow: auto;
+        min-height: 100vh;
         margin: 0;
+        color: white;
+        padding: 20px;
     }
 
     .game-container {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
-        height: 100vh;
+        justify-content: flex-start;
+        min-height: 90vh;
         text-align: center;
-        color: white;
         position: relative;
+        gap: 10px;
+        padding-top: 20px;
     }
 
     h1 {
-        font-size: 2.8rem;
-        margin-bottom: 1rem;
-        background: linear-gradient(90deg, #a1c4fd, #c2e9fb);
+        font-size: 2.2rem;
+        margin-bottom: 10px;
+        background: linear-gradient(90deg, #00BFFF, #00FFAA);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
-        text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        text-shadow: 0 0 15px rgba(0, 191, 255, 0.4);
+        font-weight: 700;
+    }
+
+    .breathing-area {
+        position: relative;
+        margin: 10px 0;
+        width: 200px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .breath-circle {
-        width: 200px;
-        height: 200px;
+        width: 120px;
+        height: 120px;
         border-radius: 50%;
-        background: radial-gradient(circle at 30% 30%, #a1c4fd, #c2e9fb);
-        box-shadow: 0 0 40px rgba(161, 196, 253, 0.6);
-        margin: 2rem 0;
-        transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        background: radial-gradient(circle at 30% 30%, #00BFFF, #0080FF);
+        box-shadow: 
+            0 0 40px rgba(0, 191, 255, 0.6),
+            inset 0 0 20px rgba(255, 255, 255, 0.1);
+        transition: all 4s cubic-bezier(0.25, 1, 0.5, 1);
         position: relative;
         overflow: hidden;
+        z-index: 2;
     }
 
-    .breath-circle::before {
-        content: '';
+    .breath-glow {
         position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
-        opacity: 0;
-        transition: opacity 0.5s ease;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0, 191, 255, 0.3) 0%, rgba(0, 191, 255, 0) 70%);
+        filter: blur(20px);
+        animation: pulseGlow 3s infinite alternate;
+        z-index: 1;
     }
 
-    .breath-circle.active::before {
-        opacity: 0.3;
+    @keyframes pulseGlow {
+        0% { transform: scale(0.8); opacity: 0.6; }
+        100% { transform: scale(1.2); opacity: 1; }
     }
 
     .instructions {
-        font-size: 1.5rem;
-        margin: 1rem 0;
-        font-weight: 500;
-        min-height: 2rem;
+        font-size: 1.3rem;
+        margin: 8px 0;
+        font-weight: 600;
+        min-height: 1.8rem;
+        color: white;
+        text-shadow: 0 0 10px rgba(0, 191, 255, 0.8);
+        padding: 10px 15px;
+        border-radius: 15px;
+        background: rgba(0, 191, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 191, 255, 0.3);
+        z-index: 10;
     }
 
     .feedback {
-        font-size: 1.3rem;
-        margin: 0.5rem 0;
-        min-height: 2rem;
-        transition: all 0.3s ease;
+        font-size: 1.1rem;
+        margin: 8px 0;
+        min-height: 1.5rem;
+        color: white;
+        text-shadow: 0 0 5px rgba(0, 191, 255, 0.5);
+        z-index: 10;
     }
 
-    .score-display {
-        font-size: 1.2rem;
-        margin-top: 1rem;
-        background: rgba(255,255,255,0.1);
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        backdrop-filter: blur(5px);
+    .stats-container {
+        display: flex;
+        gap: 15px;
+        margin: 10px 0;
+        z-index: 10;
+    }
+
+    .stat-box {
+        background: rgba(0, 191, 255, 0.15);
+        border: 1px solid rgba(0, 191, 255, 0.4);
+        border-radius: 12px;
+        padding: 8px 12px;
+        backdrop-filter: blur(10px);
+        min-width: 80px;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+        opacity: 0.8;
+        margin-bottom: 3px;
+        color: #CCCCCC;
+    }
+
+    .stat-value {
+        font-size: 1.3rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
     }
 
     .controls {
-        margin-top: 2rem;
+        margin: 15px 0 30px 0;
         display: flex;
-        gap: 1rem;
+        gap: 15px;
+        z-index: 10;
     }
 
-    button {
-        background: rgba(255,255,255,0.1);
+    .control-btn {
+        background: linear-gradient(135deg, #00BFFF, #0080FF);
         color: white;
-        border: 1px solid rgba(255,255,255,0.3);
-        padding: 0.5rem 1.5rem;
-        border-radius: 30px;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        font-size: 1rem;
+        box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 100px;
+        justify-content: center;
+    }
+
+    .control-btn:hover {
+        background: linear-gradient(135deg, #00A6D6, #0077CC);
+        box-shadow: 0 0 25px rgba(0, 191, 255, 0.8);
+        transform: translateY(-3px);
+    }
+
+    .control-btn.reset {
+        background: linear-gradient(135deg, #FF416C, #FF4B2B);
+        box-shadow: 0 6px 20px rgba(255, 65, 108, 0.5);
+    }
+
+    .control-btn.reset:hover {
+        background: linear-gradient(135deg, #E03E60, #D84324);
+        box-shadow: 0 0 25px rgba(255, 65, 108, 0.8);
+    }
+
+    .sound-toggle {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        background: rgba(0, 191, 255, 0.2);
+        border: 1px solid rgba(0, 191, 255, 0.5);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
         cursor: pointer;
         transition: all 0.3s ease;
         backdrop-filter: blur(5px);
+        font-size: 0.8rem;
+        z-index: 100;
     }
 
-    button:hover {
-        background: rgba(255,255,255,0.2);
+    /* Remove floating elements to ensure everything fits */
+    .floating-elements {
+        display: none;
     }
 
-    .particles {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: -1;
+    .breath-particles {
+        display: none;
     }
 
-    .particle {
-        position: absolute;
-        background: rgba(255,255,255,0.6);
+    .breathing-rhythm {
+        margin: 8px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        z-index: 10;
+    }
+
+    .rhythm-dot {
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
-        animation: float 15s infinite linear;
+        background: rgba(255, 255, 255, 0.3);
+        transition: all 0.5s ease;
     }
 
-    @keyframes float {
-        0% {
-            transform: translateY(0) rotate(0deg);
-            opacity: 0;
-        }
-        10% {
-            opacity: 1;
-        }
-        90% {
-            opacity: 1;
-        }
-        100% {
-            transform: translateY(-100vh) rotate(360deg);
-            opacity: 0;
-        }
-    }
-
-    @keyframes pulse {
-        0%, 100% {
-            box-shadow: 0 0 40px rgba(161, 196, 253, 0.6);
-        }
-        50% {
-            box-shadow: 0 0 60px rgba(161, 196, 253, 0.9);
-        }
+    .rhythm-dot.active {
+        background: #00BFFF;
+        box-shadow: 0 0 8px #00BFFF;
+        transform: scale(1.3);
     }
 </style>
 
 <div class="game-container">
     <h1>Mindful Breathing Exercise</h1>
     
-    <div class="breath-circle" id="breathCircle"></div>
+    <div class="breathing-area">
+        <div class="breath-glow"></div>
+        <div class="breath-circle" id="breathCircle"></div>
+    </div>
     
-    <p class="instructions" id="instructions">Press Start to begin</p>
+    <p class="instructions" id="instructions">Press Start to begin your breathing journey</p>
     <p class="feedback" id="feedback"></p>
     
-    <div class="score-display">
-        <span>Score: </span>
-        <span id="score">0</span>
-        <span> | Streak: </span>
-        <span id="streak">0</span>
+    <div class="breathing-rhythm" id="breathingRhythm">
+        <div class="rhythm-dot"></div>
+        <div class="rhythm-dot"></div>
+        <div class="rhythm-dot"></div>
+        <div class="rhythm-dot"></div>
+        <div class="rhythm-dot"></div>
     </div>
     
+    <div class="stats-container">
+        <div class="stat-box">
+            <div class="stat-label">Score</div>
+            <div class="stat-value" id="score">0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Streak</div>
+            <div class="stat-value" id="streak">0</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">Breaths</div>
+            <div class="stat-value" id="breathCount">0</div>
+        </div>
+    </div>
+    
+    <!-- BUTTONS ARE NOW VISIBLE AND PROPERLY POSITIONED -->
     <div class="controls">
-        <button id="startBtn">Start</button>
-        <button id="resetBtn">Reset</button>
+        <button class="control-btn" id="startBtn">
+            <span>Start</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 5V19L19 12L8 5Z" fill="white"/>
+            </svg>
+        </button>
+        <button class="control-btn reset" id="resetBtn">
+            <span>Reset</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z" fill="white"/>
+            </svg>
+        </button>
     </div>
     
-    <div class="particles" id="particles"></div>
+    <div class="sound-toggle" id="soundToggle">
+        🔇 Sound Off
+    </div>
 </div>
 
 <script>
@@ -182,68 +286,56 @@
     const feedback = document.getElementById('feedback');
     const scoreDisplay = document.getElementById('score');
     const streakDisplay = document.getElementById('streak');
+    const breathCountDisplay = document.getElementById('breathCount');
     const startBtn = document.getElementById('startBtn');
     const resetBtn = document.getElementById('resetBtn');
-    const particlesContainer = document.getElementById('particles');
+    const breathingRhythm = document.getElementById('breathingRhythm');
+    const soundToggle = document.getElementById('soundToggle');
 
     let score = 0;
     let streak = 0;
+    let breathCount = 0;
     let isBreathingIn = true;
     let isRunning = false;
     let cycleStartTime;
     let breathInterval;
-    let particlesInterval;
+    let rhythmInterval;
+    let soundEnabled = false;
 
-    function createParticle() {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
+    function updateRhythmDots() {
+        const dots = breathingRhythm.querySelectorAll('.rhythm-dot');
+        const now = Date.now();
+        const cycleTime = (now - cycleStartTime) % 8000;
+        const progress = cycleTime / 8000;
         
-        // Random size between 2px and 6px
-        const size = Math.random() * 4 + 2;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        
-        // Random position
-        particle.style.left = `${Math.random() * 100}%`;
-        particle.style.bottom = `-10px`;
-        
-        // Random animation duration
-        const duration = Math.random() * 10 + 10;
-        particle.style.animationDuration = `${duration}s`;
-        
-        // Random delay
-        particle.style.animationDelay = `${Math.random() * 5}s`;
-        
-        particlesContainer.appendChild(particle);
-        
-        // Remove particle after animation completes
-        setTimeout(() => {
-            particle.remove();
-        }, duration * 1000);
-    }
-
-    function startParticles() {
-        particlesInterval = setInterval(createParticle, 300);
-    }
-
-    function stopParticles() {
-        clearInterval(particlesInterval);
+        dots.forEach((dot, index) => {
+            const dotProgress = (index / dots.length) % 1;
+            const isActive = Math.abs(progress - dotProgress) < 0.1;
+            
+            if (isActive) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
     }
 
     function breathe() {
         if (isBreathingIn) {
             // Inhale phase
-            breathCircle.style.transform = 'scale(1.8)';
-            breathCircle.style.backgroundColor = 'radial-gradient(circle at 30% 30%, #a1c4fd, #c2e9fb)';
-            breathCircle.classList.add('active');
+            breathCircle.style.transform = 'scale(1.4)';
+            breathCircle.style.background = 'radial-gradient(circle at 30% 30%, #00FFAA, #00BFFF)';
             instructions.textContent = 'Breathe In... 🌬️';
-            feedback.textContent = '';
+            instructions.style.background = 'rgba(0, 255, 170, 0.15)';
         } else {
             // Exhale phase
             breathCircle.style.transform = 'scale(1)';
-            breathCircle.style.backgroundColor = 'radial-gradient(circle at 30% 30%, #fbc2eb, #a6c1ee)';
-            breathCircle.classList.remove('active');
+            breathCircle.style.background = 'radial-gradient(circle at 30% 30%, #00BFFF, #0080FF)';
             instructions.textContent = 'Breathe Out... 😮‍💨';
+            instructions.style.background = 'rgba(0, 191, 255, 0.15)';
+            
+            breathCount++;
+            breathCountDisplay.textContent = breathCount;
         }
         
         isBreathingIn = !isBreathingIn;
@@ -254,18 +346,15 @@
         if (isRunning) return;
         
         isRunning = true;
-        startBtn.textContent = 'Pause';
-        score = 0;
-        streak = 0;
-        updateDisplays();
-        startParticles();
+        startBtn.innerHTML = '<span>Pause</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 19H10V5H6V19ZM14 5V19H18V5H14Z" fill="white"/></svg>';
         
         // Start with breathe in
         isBreathingIn = true;
         breathe();
         
-        // Set up breathing cycle (4 seconds inhale, 4 seconds exhale)
+        // Set up breathing cycle
         breathInterval = setInterval(breathe, 8000);
+        rhythmInterval = setInterval(updateRhythmDots, 100);
         
         // Add keyboard control
         document.addEventListener('keydown', handleKeyPress);
@@ -275,25 +364,34 @@
         if (!isRunning) return;
         
         isRunning = false;
-        startBtn.textContent = 'Resume';
-        clearInterval(breathInterval);
-        stopParticles();
-        breathCircle.style.transform = 'scale(1)';
-        breathCircle.classList.remove('active');
-        instructions.textContent = 'Paused';
+        startBtn.innerHTML = '<span>Resume</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5V19L19 12L8 5Z" fill="white"/></svg>';
         
-        // Remove keyboard listener
+        clearInterval(breathInterval);
+        clearInterval(rhythmInterval);
+        
+        breathCircle.style.transform = 'scale(1)';
+        instructions.textContent = 'Paused';
+        instructions.style.background = 'rgba(255, 215, 0, 0.15)';
+        
         document.removeEventListener('keydown', handleKeyPress);
     }
 
     function resetGame() {
         pauseGame();
-        startBtn.textContent = 'Start';
+        startBtn.innerHTML = '<span>Start</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5V19L19 12L8 5Z" fill="white"/></svg>';
+        
         score = 0;
         streak = 0;
+        breathCount = 0;
         updateDisplays();
-        instructions.textContent = 'Press Start to begin';
+        
+        instructions.textContent = 'Press Start to begin your breathing journey';
+        instructions.style.background = 'rgba(0, 191, 255, 0.15)';
         feedback.textContent = '';
+        
+        // Reset rhythm dots
+        const dots = breathingRhythm.querySelectorAll('.rhythm-dot');
+        dots.forEach(dot => dot.classList.remove('active'));
     }
 
     function handleKeyPress(e) {
@@ -310,25 +408,18 @@
         const cycleTime = (now - cycleStartTime) % 8000;
         const isInhalePhase = cycleTime < 4000;
         
-        // Perfect timing is within 500ms of transition
         const isPerfectTiming = 
             (isInhalePhase && cycleTime > 3500) || 
-            (!isInhalePhase && cycleTime > 7500 || cycleTime < 500);
+            (!isInhalePhase && (cycleTime > 7500 || cycleTime < 500));
         
         if (isPerfectTiming) {
             score += 10;
             streak += 1;
             feedback.textContent = "Perfect! +10 🎯";
             feedback.style.color = "#90f0e8";
-            
-            // Add visual effect for perfect timing
-            breathCircle.style.boxShadow = '0 0 80px rgba(161, 196, 253, 0.9)';
-            setTimeout(() => {
-                breathCircle.style.boxShadow = '0 0 40px rgba(161, 196, 253, 0.6)';
-            }, 300);
         } else {
             streak = 0;
-            feedback.textContent = "Missed the rhythm!";
+            feedback.textContent = "Missed!";
             feedback.style.color = "#ff8888";
         }
         
@@ -338,15 +429,12 @@
     function updateDisplays() {
         scoreDisplay.textContent = score;
         streakDisplay.textContent = streak;
-        
-        // Bonus for streaks
-        if (streak >= 3) {
-            streakDisplay.style.color = "#90f0e8";
-            streakDisplay.style.fontWeight = "bold";
-        } else {
-            streakDisplay.style.color = "white";
-            streakDisplay.style.fontWeight = "normal";
-        }
+        breathCountDisplay.textContent = breathCount;
+    }
+
+    function toggleSound() {
+        soundEnabled = !soundEnabled;
+        soundToggle.textContent = soundEnabled ? '🔊 Sound On' : '🔇 Sound Off';
     }
 
     // Event listeners
@@ -359,9 +447,6 @@
     });
 
     resetBtn.addEventListener('click', resetGame);
-
-    // Initialize
-    breathCircle.style.transition = 'all 4s cubic-bezier(0.25, 1, 0.5, 1)';
-    breathCircle.style.animation = 'pulse 3s infinite';
+    soundToggle.addEventListener('click', toggleSound);
 </script>
 {% endblock %}
