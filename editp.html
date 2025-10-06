@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block body %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='nav.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylehh.css') }}">
+</head>
+
+<div class="profile-edit-container">
+    <div class="profile-edit-card">
+        <!-- Profile Header with Picture -->
+        <div class="profile-header-section">
+            <div class="profile-picture-wrapper">
+                <div class="profile-picture-container">
+                    <img id="profile-preview" 
+                         src="{{ url_for('static', filename='uploads/' ~ user.profile_pic) if user.profile_pic else url_for('static', filename='default-profile.png') }}" 
+                         alt="Profile Picture"
+                         class="profile-image">
+                </div>
+                <label for="profile-pic" class="picture-upload-btn">
+                    <i class="fas fa-camera"></i> 
+                </label>
+                <input type="file" id="profile-pic" name="profile_pic" accept="image/*" hidden>
+            </div>
+            <h1 class="profile-edit-title">Edit Profile</h1>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages-container">
+                    {% for category, message in messages %}
+                        <div class="alert-message alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Edit Form -->
+        <form action="/editp" method="POST" enctype="multipart/form-data" class="profile-edit-form">
+            <div class="form-sections-wrapper">
+                <!-- Basic Information Section -->
+                <section class="form-section">
+                    <h2 class="section-title">Basic Information</h2>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" 
+                                   value="{{ user.username }}" required
+                                   class="form-input">
+                        </div>
+                        <div class="form-field">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" 
+                                   value="{{ user.email }}" disabled
+                                   class="form-input">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Personal Details Section -->
+                <section class="form-section">
+                    <h2 class="section-title">Personal Details</h2>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="gender">Gender</label>
+                            <select id="gender" name="gender" class="form-select">
+                                <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female</option>
+                                <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other</option>
+                                <option value="Prefer not to say" {% if user.gender == 'Prefer not to say' %}selected{% endif %}>Prefer not to say</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="preferred_contact_method">Preferred Contact</label>
+                            <select id="preferred_contact_method" name="preferred_contact_method" class="form-select">
+                                <option value="Email" {% if user.preferred_contact_method == 'Email' %}selected{% endif %}>Email</option>
+                                <option value="Phone" {% if user.preferred_contact_method == 'Phone' %}selected{% endif %}>Phone</option>
+                                <option value="Chat" {% if user.preferred_contact_method == 'Chat' %}selected{% endif %}>Chat</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bio Section -->
+                <section class="form-section">
+                    <div class="form-field full-width">
+                        <label for="bio">Bio</label>
+                        <textarea id="bio" name="bio" rows="4" class="form-textarea">{{ user.bio }}</textarea>
+                    </div>
+                </section>
+
+                <!-- Mental Health Section -->
+                <section class="form-section">
+                    <div class="form-field full-width">
+                        <label for="mental_health_status">Mental Health Status</label>
+                        <input type="text" id="mental_health_status" name="mental_health_status" 
+                               value="{{ user.mental_health_status }}" 
+                               placeholder="Describe your current mental health status"
+                               class="form-input">
+                    </div>
+                </section>
+
+                <!-- Password Change Section -->
+                <section class="form-section password-section">
+                    <h2 class="section-title">Change Password</h2>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="current-password">Current Password</label>
+                            <div class="password-input-wrapper">
+                                <input type="password" id="current-password" name="current_password" 
+                                       placeholder="Enter your current password"
+                                       class="form-input">
+                                <button type="button" class="toggle-password-btn" onclick="togglePassword('current-password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="new-password">New Password</label>
+                            <div class="password-input-wrapper">
+                                <input type="password" id="new-password" name="new_password" 
+                                       minlength="8" placeholder="At least 8 characters"
+                                       class="form-input">
+                                <button type="button" class="toggle-password-btn" onclick="togglePassword('new-password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label for="confirm-password">Confirm New Password</label>
+                            <div class="password-input-wrapper">
+                                <input type="password" id="confirm-password" name="confirm_password" 
+                                       minlength="8" placeholder="Re-enter your new password"
+                                       class="form-input">
+                                <button type="button" class="toggle-password-btn" onclick="togglePassword('confirm-password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="save-changes-btn">
+                    <i class="fas fa-save"></i> Save All Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Profile picture preview
+    document.getElementById('profile-pic').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('profile-preview');
+                preview.src = e.target.result;
+                preview.style.opacity = '1';
+                preview.parentElement.classList.add('has-image');
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Toggle password visibility
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = input.parentElement.querySelector('i');
+        input.type = input.type === 'password' ? 'text' : 'password';
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+    }
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+        
+        // Only validate if any password field is filled
+        if (currentPassword || newPassword || confirmPassword) {
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                e.preventDefault();
+                showAlert('Please fill all password fields to change your password', 'error');
+                return false;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                e.preventDefault();
+                showAlert('Your new passwords do not match!', 'error');
+                return false;
+            }
+            
+            if (newPassword.length < 8) {
+                e.preventDefault();
+                showAlert('Password must be at least 8 characters long', 'error');
+                return false;
+            }
+        }
+        return true;
+    });
+
+    function showAlert(message, type) {
+        // Implement your custom alert/notification here
+        alert(message); // Temporary simple alert
+    }
+</script>
+{% endblock %}
