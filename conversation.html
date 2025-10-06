@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mental Health Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #0a1a2a 100%);
+            color: #FFFFFF;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .header h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00BFFF, #00FFAA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(0, 191, 255, 0.4);
+        }
+
+        .header p {
+            color: #CCCCCC;
+            font-size: 1.1rem;
+        }
+
+        #chatbox {
+            width: 95%;
+            max-width: 800px;
+            margin: auto;
+            background: rgba(10, 10, 10, 0.85);
+            padding: 25px;
+            border-radius: 25px;
+            border: 2px solid #00BFFF;
+            box-shadow: 0 0 30px rgba(0, 191, 255, 0.5);
+            backdrop-filter: blur(15px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #chatbox::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 191, 255, 0.15) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        #messages {
+            border: 2px solid #00BFFF;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            background-color: rgba(18, 18, 18, 0.9);
+            border-radius: 20px;
+            box-shadow: inset 0 0 20px rgba(0, 191, 255, 0.4);
+            margin-bottom: 25px;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar */
+        #messages::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #messages::-webkit-scrollbar-track {
+            background: rgba(0, 191, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        #messages::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #00BFFF, #0080FF);
+            border-radius: 10px;
+            border: 2px solid rgba(18, 18, 18, 0.9);
+        }
+
+        /* Message Containers */
+        .ai-message-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 25px;
+            animation: slideInLeft 0.5s ease-out;
+        }
+
+        .user-message-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 25px;
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-30px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(30px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+
+        /* Character Avatar */
+        .character-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00BFFF, #0080FF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .character-avatar.thinking {
+            animation: thinking 2s infinite;
+        }
+
+        @keyframes thinking {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.05) rotate(5deg); }
+            75% { transform: scale(1.05) rotate(-5deg); }
+        }
+
+        .character-avatar.talking {
+            animation: talking 0.6s infinite alternate;
+        }
+
+        @keyframes talking {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .character-avatar.happy {
+            animation: happy 3s infinite;
+        }
+
+        @keyframes happy {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-5px) rotate(5deg); }
+            75% { transform: translateY(-3px) rotate(-5deg); }
+        }
+
+        .character-avatar.sad {
+            animation: sad 4s infinite;
+        }
+
+        @keyframes sad {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+
+        .character-avatar.excited {
+            animation: excited 2s infinite;
+        }
+
+        @keyframes excited {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        /* Speech Bubbles */
+        .character-speech-bubble {
+            background: linear-gradient(135deg, #2A2A2A, #1A1A1A);
+            color: white;
+            padding: 18px 22px;
+            border-radius: 25px;
+            border-bottom-left-radius: 8px;
+            border: 1px solid rgba(0, 191, 255, 0.4);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            max-width: 75%;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .character-speech-bubble::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 20px;
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-right: 12px solid #2A2A2A;
+        }
+
+        .user-speech-bubble {
+            background: linear-gradient(135deg, #00BFFF, #0080FF);
+            color: white;
+            padding: 18px 22px;
+            border-radius: 25px;
+            border-bottom-right-radius: 8px;
+            box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
+            max-width: 75%;
+            position: relative;
+        }
+
+        .user-speech-bubble::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 20px;
+            width: 0;
+            height: 0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-left: 12px solid #00BFFF;
+        }
+
+        .message-content {
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .character-name {
+            font-size: 0.9rem;
+            color: #00BFFF;
+            margin-bottom: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .expression-tag {
+            display: inline-block;
+            background: rgba(0, 191, 255, 0.3);
+            color: #00BFFF;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            margin-top: 10px;
+            border: 1px solid rgba(0, 191, 255, 0.5);
+            animation: pulseGlow 2s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 5px rgba(0, 191, 255, 0.5); }
+            50% { box-shadow: 0 0 15px rgba(0, 191, 255, 0.8); }
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.6;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 10px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #00BFFF;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-10px); opacity: 1; }
+        }
+
+        /* Input Section */
+        .input-container {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #00BFFF;
+            border-radius: 50px;
+            background-color: rgba(30, 30, 30, 0.9);
+            color: white;
+            transition: all 0.3s ease-in-out;
+            outline: none;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        input:focus {
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.6);
+            background-color: rgba(40, 40, 40, 0.9);
+            transform: scale(1.02);
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            background: linear-gradient(135deg, #00BFFF, #0080FF);
+            color: white;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #00A6D6, #0077CC);
+            box-shadow: 0 0 25px rgba(0, 191, 255, 0.8);
+            transform: translateY(-3px) scale(1.05);
+        }
+
+        .mic-button {
+            background: linear-gradient(135deg, #FF416C, #FF4B2B);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 26px;
+            box-shadow: 0 6px 20px rgba(255, 65, 108, 0.5);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .mic-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(255, 65, 108, 0.8);
+        }
+
+        .mic-button.listening {
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 0 15px rgba(255, 65, 108, 0.3);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 65, 108, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 65, 108, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 65, 108, 0); }
+        }
+
+        .status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #00FF00;
+            text-align: center;
+            height: 20px;
+            font-weight: bold;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .suggestion-chip {
+            background: rgba(0, 191, 255, 0.25);
+            border: 2px solid rgba(0, 191, 255, 0.6);
+            color: #CCCCCC;
+            padding: 10px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .suggestion-chip:hover {
+            background: rgba(0, 191, 255, 0.4);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 191, 255, 0.4);
+        }
+
+        /* Language Selector */
+        .language-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+
+        .language-button {
+            background: rgba(0, 191, 255, 0.2);
+            border: 1px solid rgba(0, 191, 255, 0.5);
+            color: #CCCCCC;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .language-button.active {
+            background: rgba(0, 191, 255, 0.6);
+            color: white;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+        }
+
+        .language-button:hover {
+            background: rgba(0, 191, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Relaxing Background Bubbles */
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 191, 255, 0.6), rgba(0, 128, 255, 0.3));
+            box-shadow: 
+                0 0 25px rgba(0, 191, 255, 0.4),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+            mix-blend-mode: screen;
+            filter: blur(1px);
+            opacity: 0.4;
+        }
+
+        /* Different bubble animations for variety */
+        .bubble-1 {
+            animation: floatUpDown 8s infinite alternate;
+        }
+
+        .bubble-2 {
+            animation: floatSideToSide 12s infinite alternate;
+        }
+
+        .bubble-3 {
+            animation: floatCircular 15s infinite linear;
+        }
+
+        .bubble-4 {
+            animation: floatWave 10s infinite ease-in-out;
+        }
+
+        .bubble-5 {
+            animation: floatPulse 6s infinite alternate;
+        }
+
+        @keyframes floatUpDown {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-40px) scale(1.05); }
+        }
+
+        @keyframes floatSideToSide {
+            0%, 100% { transform: translateX(-20px) rotate(0deg); }
+            50% { transform: translateX(20px) rotate(180deg); }
+        }
+
+        @keyframes floatCircular {
+            0% { transform: rotate(0deg) translateX(30px) rotate(0deg); }
+            100% { transform: rotate(360deg) translateX(30px) rotate(-360deg); }
+        }
+
+        @keyframes floatWave {
+            0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+            25% { transform: translateY(-25px) translateX(15px) scale(1.1); }
+            50% { transform: translateY(10px) translateX(-10px) scale(0.95); }
+            75% { transform: translateY(-15px) translateX(-15px) scale(1.05); }
+        }
+
+        @keyframes floatPulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.2); opacity: 0.6; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            #chatbox {
+                width: 100%;
+                padding: 15px;
+            }
+            
+            .character-avatar {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+            
+            .character-speech-bubble,
+            .user-speech-bubble {
+                max-width: 85%;
+                padding: 15px 18px;
+            }
+            
+            .input-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            input, button, .mic-button {
+                width: 100%;
+            }
+            
+            .mic-button {
+                width: 60px;
+                height: 60px;
+                align-self: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements" id="floatingElements"></div>
+    
+    <div class="header">
+        <h2>AI Mental Health Assistant</h2>
+        <p>Your compassionate companion for emotional support and guidance</p>
+    </div>
+    
+    <div id="chatbox">
+        <div class="language-selector">
+            <div class="language-button active" id="englishBtn" onclick="setLanguage('en')">English</div>
+            <div class="language-button" id="hindiBtn" onclick="setLanguage('hi')">हिंदी (Hindi)</div>
+        </div>
+        
+        <div id="messages">
+            <div class="ai-message-container">
+                <div class="character-avatar happy">
+                    🧠
+                </div>
+                <div class="character-speech-bubble">
+                    <div class="character-name">
+                        Mindful Mate 
+                        <span class="expression-tag">😊 Ready to help!</span>
+                    </div>
+                    <div class="message-content">
+                        Hello! I'm here to listen and provide support. How are you feeling today?
+                    </div>
+                    <div class="message-time" id="welcome-time"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="suggestions" id="suggestionsContainer">
+            <div class="suggestion-chip" onclick="insertSuggestion('I\'m feeling anxious today')">I'm feeling anxious</div>
+            <div class="suggestion-chip" onclick="insertSuggestion('I need some motivation')">I need motivation</div>
+            <div class="suggestion-chip" onclick="insertSuggestion('I\'m feeling stressed')">I'm feeling stressed</div>
+            <div class="suggestion-chip" onclick="insertSuggestion('Can you help me relax?')">Help me relax</div>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type or speak your message..." />
+            <button onclick="sendMessage()">
+                <span>Send</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <div class="mic-button" id="micButton" onclick="toggleVoiceRecognition()">🎤</div>
+        </div>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        // Language management
+        let currentLanguage = 'en';
+        const languageData = {
+            en: {
+                welcomeMessage: "Hello! I'm here to listen and provide support. How are you feeling today?",
+                suggestions: [
+                    { text: "I'm feeling anxious today", display: "I'm feeling anxious" },
+                    { text: "I need some motivation", display: "I need motivation" },
+                    { text: "I'm feeling stressed", display: "I'm feeling stressed" },
+                    { text: "Can you help me relax?", display: "Help me relax" }
+                ],
+                inputPlaceholder: "Type or speak your message...",
+                listeningStatus: "🎤 Listening... Speak now",
+                processingStatus: "⚡ Processing...",
+                errorStatus: "❌ Error: ",
+                characterName: "Mindful Mate"
+            },
+            hi: {
+                welcomeMessage: "नमस्ते! मैं यहां आपकी बात सुनने और सहायता प्रदान करने के लिए हूं। आज आप कैसा महसूस कर रहे हैं?",
+                suggestions: [
+                    { text: "आज मैं चिंतित महसूस कर रहा हूं", display: "मैं चिंतित हूं" },
+                    { text: "मुझे कुछ प्रेरणा की आवश्यकता है", display: "मुझे प्रेरणा चाहिए" },
+                    { text: "मैं तनाव महसूस कर रहा हूं", display: "मैं तनाव में हूं" },
+                    { text: "क्या आप मुझे आराम करने में मदद कर सकते हैं?", display: "मुझे आराम करने में मदद करें" }
+                ],
+                inputPlaceholder: "अपना संदेश टाइप करें या बोलें...",
+                listeningStatus: "🎤 सुन रहा हूं... बोलिए",
+                processingStatus: "⚡ प्रोसेसिंग...",
+                errorStatus: "❌ त्रुटि: ",
+                characterName: "माइंडफुल साथी"
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update UI elements
+            document.getElementById('englishBtn').classList.toggle('active', lang === 'en');
+            document.getElementById('hindiBtn').classList.toggle('active', lang === 'hi');
+            
+            // Update input placeholder
+            document.getElementById('userInput').placeholder = languageData[lang].inputPlaceholder;
+            
+            // Update suggestions
+            const suggestionsContainer = document.getElementById('suggestionsContainer');
+            suggestionsContainer.innerHTML = '';
+            
+            languageData[lang].suggestions.forEach(suggestion => {
+                const chip = document.createElement('div');
+                chip.classList.add('suggestion-chip');
+                chip.textContent = suggestion.display;
+                chip.onclick = () => insertSuggestion(suggestion.text);
+                suggestionsContainer.appendChild(chip);
+            });
+            
+            // Update welcome message if it's the first message
+            const messages = document.getElementById('messages');
+            if (messages.children.length === 1) {
+                const welcomeMessage = messages.querySelector('.message-content');
+                welcomeMessage.textContent = languageData[lang].welcomeMessage;
+                
+                const characterName = messages.querySelector('.character-name');
+                characterName.innerHTML = `${languageData[lang].characterName} <span class="expression-tag">😊 Ready to help!</span>`;
+            }
+        }
+
+        // Create relaxing background bubbles
+        function createRelaxingBubbles() {
+            const container = document.getElementById('floatingElements');
+            const bubbleCount = 12; // Perfect number for relaxation
+            
+            const animationTypes = ['bubble-1', 'bubble-2', 'bubble-3', 'bubble-4', 'bubble-5'];
+            
+            for (let i = 0; i < bubbleCount; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('floating-element');
+                
+                // Random properties for natural variety
+                const size = Math.random() * 40 + 20; // 20-60px
+                const left = Math.random() * 100;
+                const top = Math.random() * 100;
+                const animationType = animationTypes[Math.floor(Math.random() * animationTypes.length)];
+                const animationDuration = 8 + Math.random() * 12; // 8-20 seconds
+                const animationDelay = Math.random() * 5; // 0-5 second delay
+                
+                bubble.style.width = size + 'px';
+                bubble.style.height = size + 'px';
+                bubble.style.left = left + '%';
+                bubble.style.top = top + '%';
+                bubble.style.animationDuration = animationDuration + 's';
+                bubble.style.animationDelay = animationDelay + 's';
+                bubble.classList.add(animationType);
+                
+                // Subtle color variations
+                const hueVariation = Math.random() * 20 - 10; // -10 to +10 degrees
+                const saturation = 70 + Math.random() * 20; // 70-90%
+                const lightness = 50 + Math.random() * 10; // 50-60%
+                
+                bubble.style.background = `radial-gradient(circle, 
+                    hsla(${200 + hueVariation}, ${saturation}%, ${lightness}%, 0.6),
+                    hsla(${210 + hueVariation}, ${saturation}%, ${lightness - 10}%, 0.3)
+                )`;
+                
+                container.appendChild(bubble);
+            }
+        }
+
+        // Voice recognition and chat functionality
+        let recognition;
+        let isListening = false;
+        let voices = [];
+
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+            if (voices.length === 0) {
+                setTimeout(loadVoices, 100);
+            }
+        }
+
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+
+        function toggleVoiceRecognition() {
+            if (isListening) {
+                stopVoiceRecognition();
+            } else {
+                startVoiceRecognition();
+            }
+        }
+
+        function startVoiceRecognition() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert("Your browser does not support Speech Recognition. Please use Chrome or Edge.");
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = currentLanguage === 'en' ? "en-US" : "hi-IN";
+            recognition.interimResults = false;
+
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('micButton').classList.add('listening');
+                updateStatus(languageData[currentLanguage].listeningStatus);
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById("userInput").value = transcript;
+                updateStatus(languageData[currentLanguage].processingStatus);
+                sendMessage();
+            };
+
+            recognition.onerror = function(event) {
+                updateStatus(languageData[currentLanguage].errorStatus + event.error);
+                stopVoiceRecognition();
+            };
+
+            recognition.onend = function() {
+                stopVoiceRecognition();
+            };
+
+            recognition.start();
+        }
+
+        function stopVoiceRecognition() {
+            if (recognition) {
+                recognition.stop();
+            }
+            isListening = false;
+            document.getElementById('micButton').classList.remove('listening');
+            updateStatus("");
+        }
+
+        function updateStatus(message) {
+            document.getElementById("status").textContent = message;
+        }
+
+        function insertSuggestion(text) {
+            document.getElementById("userInput").value = text;
+            document.getElementById("userInput").focus();
+        }
+
+        function getCharacterExpression(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('anxious') || lowerMessage.includes('worried') || lowerMessage.includes('scared') ||
+                lowerMessage.includes('चिंतित') || lowerMessage.includes('घबराया') || lowerMessage.includes('डरा')) {
+                return { expression: "😌 Calm and understanding", animation: "sad" };
+            } else if (lowerMessage.includes('sad') || lowerMessage.includes('depressed') || lowerMessage.includes('unhappy') ||
+                       lowerMessage.includes('उदास') || lowerMessage.includes('दुखी') || lowerMessage.includes('निराश')) {
+                return { expression: "🤗 Warm and comforting", animation: "sad" };
+            } else if (lowerMessage.includes('happy') || lowerMessage.includes('good') || lowerMessage.includes('great') ||
+                       lowerMessage.includes('खुश') || lowerMessage.includes('अच्छा') || lowerMessage.includes('बढ़िया')) {
+                return { expression: "🎉 Celebrating with you!", animation: "happy" };
+            } else if (lowerMessage.includes('stress') || lowerMessage.includes('overwhelmed') ||
+                       lowerMessage.includes('तनाव') || lowerMessage.includes('अभिभूत')) {
+                return { expression: "🌿 Peaceful and grounding", animation: "thinking" };
+            } else if (lowerMessage.includes('thank') || lowerMessage.includes('appreciate') ||
+                       lowerMessage.includes('धन्यवाद') || lowerMessage.includes('शुक्रिया')) {
+                return { expression: "😊 Happy to help!", animation: "excited" };
+            } else if (lowerMessage.includes('emergency') || lowerMessage.includes('help') || lowerMessage.includes('urgent') ||
+                       lowerMessage.includes('आपातकाल') || lowerMessage.includes('मदद') || lowerMessage.includes('जरूरी')) {
+                return { expression: "🚨 Immediate support", animation: "thinking" };
+            } else {
+                return { expression: "💭 Thinking carefully", animation: "thinking" };
+            }
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById("userInput").value.trim();
+            if (!userInput) return;
+
+            const messagesDiv = document.getElementById("messages");
+            
+            // Add user message
+            const userContainer = document.createElement("div");
+            userContainer.classList.add("user-message-container");
+            
+            const userBubble = document.createElement("div");
+            userBubble.classList.add("user-speech-bubble");
+            userBubble.innerHTML = `
+                <div class="message-content">${userInput}</div>
+                <div class="message-time">${getCurrentTime()}</div>
+            `;
+            
+            userContainer.appendChild(userBubble);
+            messagesDiv.appendChild(userContainer);
+            
+            // Clear input
+            document.getElementById("userInput").value = "";
+            
+            // Add AI "thinking" message with character
+            const aiContainer = document.createElement("div");
+            aiContainer.classList.add("ai-message-container");
+            
+            const characterAvatar = document.createElement("div");
+            characterAvatar.classList.add("character-avatar", "thinking");
+            characterAvatar.innerHTML = "🧠";
+            
+            const characterBubble = document.createElement("div");
+            characterBubble.classList.add("character-speech-bubble");
+            characterBubble.innerHTML = `
+                <div class="character-name">${languageData[currentLanguage].characterName}</div>
+                <div class="message-content">
+                    <span id="typingText">Thinking</span>
+                    <span class="typing-indicator">
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                    </span>
+                </div>
+                <div class="message-time">${getCurrentTime()}</div>
+            `;
+            
+            aiContainer.appendChild(characterAvatar);
+            aiContainer.appendChild(characterBubble);
+            messagesDiv.appendChild(aiContainer);
+            
+            // Scroll to bottom
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            try {
+                // Simulate API response for demo purposes
+                // In a real implementation, you would call your backend API
+                const demoResponse = getDemoResponse(userInput, currentLanguage);
+                
+                // Get character expression based on response
+                const expression = getCharacterExpression(demoResponse);
+                
+                // Update character message with response
+                setTimeout(() => {
+                    characterBubble.innerHTML = `
+                        <div class="character-name">
+                            ${languageData[currentLanguage].characterName}
+                            <span class="expression-tag">${expression.expression}</span>
+                        </div>
+                        <div class="message-content">${demoResponse}</div>
+                        <div class="message-time">${getCurrentTime()}</div>
+                    `;
+                    
+                    // Update character animation
+                    characterAvatar.className = "character-avatar " + expression.animation;
+                    
+                    // Speak the response
+                    setTimeout(() => {
+                        characterAvatar.classList.add("talking");
+                        speakText(demoResponse);
+                        setTimeout(() => {
+                            characterAvatar.classList.remove("talking");
+                            characterAvatar.classList.add(expression.animation);
+                        }, 2000);
+                    }, 800);
+                }, 1500);
+                
+            } catch (error) {
+                characterBubble.innerHTML = `
+                    <div class="character-name">
+                        ${languageData[currentLanguage].characterName}
+                        <span class="expression-tag">😔 Connection issue</span>
+                    </div>
+                    <div class="message-content">Sorry, I'm having trouble connecting right now. Please try again.</div>
+                    <div class="message-time">${getCurrentTime()}</div>
+                `;
+                characterAvatar.className = "character-avatar sad";
+            }
+        }
+
+        // Demo response function - replace with actual API call
+        function getDemoResponse(userInput, language) {
+            const responses = {
+                en: [
+                    "I understand how you're feeling. Let's take a moment to breathe together.",
+                    "It's completely normal to feel this way sometimes. Would you like to try a simple relaxation exercise?",
+                    "Thank you for sharing that with me. Remember, it's okay to not be okay sometimes.",
+                    "I'm here to support you. Let's work through this together, one step at a time.",
+                    "Your feelings are valid. Would you like to talk more about what's on your mind?"
+                ],
+                hi: [
+                    "मैं समझता हूं कि आप कैसा महसूस कर रहे हैं। चलिए एक साथ एक पल के लिए सांस लेते हैं।",
+                    "कभी-कभी इस तरह महसूस करना पूरी तरह से सामान्य है। क्या आप एक सरल विश्राम अभ्यास आजमाना चाहेंगे?",
+                    "मुझसे यह साझा करने के लिए धन्यवाद। याद रखें, कभी-कभी ठीक नहीं होना भी ठीक है।",
+                    "मैं आपका समर्थन करने के लिए यहां हूं। चलिए इस पर एक साथ काम करते हैं, एक कदम बारी।",
+                    "आपकी भावनाएं मान्य हैं। क्या आप अपने मन में जो चल रहा है, उसके बारे में और बात करना चाहेंगे?"
+                ]
+            };
+            
+            const langResponses = responses[language] || responses.en;
+            return langResponses[Math.floor(Math.random() * langResponses.length)];
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
+
+        function speakText(text) {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+
+            const utterance = new SpeechSynthesisUtterance(
+                text.replace(/, /g, ", ... ").replace(/\./g, ". ... ")
+            );
+
+            let selectedVoice;
+            if (currentLanguage === 'hi') {
+                selectedVoice = voices.find(voice => 
+                    voice.lang.includes('hi') || voice.name.includes('Hindi')
+                );
+            } else {
+                selectedVoice = voices.find(voice =>
+                    voice.name.includes("Google US English") || voice.name.includes("Microsoft Zira")
+                );
+            }
+            
+            if (selectedVoice) utterance.voice = selectedVoice;
+
+            utterance.rate = 0.92;
+            utterance.pitch = 1.07;
+            utterance.lang = currentLanguage === 'hi' ? 'hi-IN' : 'en-US';
+
+            speechSynthesis.speak(utterance);
+        }
+
+        document.getElementById("userInput").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Set welcome message time
+        document.getElementById("welcome-time").textContent = getCurrentTime();
+
+        // Initialize everything
+        window.onload = function() {
+            loadVoices();
+            createRelaxingBubbles();
+            document.getElementById("userInput").focus();
+        };
+    </script>
+</body>
+</html>
