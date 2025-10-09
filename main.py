@@ -6,6 +6,8 @@ import os
 import groq
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
+import random
+import time
 
 load_dotenv(encoding='utf-8')
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -33,11 +35,123 @@ app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 # ----------------- AI Chat Conversation -----------------
 conversation_history = [
     {"role": "system", "content":
-        "You are an empathetic AI that provides motivation, hope, and emotional support. "
-        "Your replies should be short but powerful, uplifting, and helpful. "
-        "If the user greets you with 'hi' or 'hello', respond in a friendly and casual way, without being overly empathetic."
+        "You are Mindful Mate, an empathetic AI mental health supporter. "
+        "Your role is to provide practical, actionable mental health support. "
+        "Key guidelines:\n"
+        "- When users ask for relaxation techniques, provide SPECIFIC methods (breathing exercises, grounding techniques, etc.)\n"
+        "- When users mention stress/anxiety, offer CONCRETE coping strategies\n"
+        "- Vary your responses - don't repeat the same phrases\n"
+        "- Balance empathy with practical advice\n"
+        "- For greetings: be warm but brief\n"
+        "- For help requests: be directive and helpful\n"
+        "- Keep responses conversational but informative (2-4 sentences)\n"
+        "- Always provide actionable steps when asked for help\n"
+        "Example good responses:\n"
+        "- 'Let's try a quick breathing exercise: Breathe in for 4 counts, hold for 4, exhale for 6. This activates your relaxation response.'\n"
+        "- 'For anxiety, try the 5-4-3-2-1 grounding technique: Name 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste.'\n"
+        "- 'When stressed, progressive muscle relaxation can help: Tense and release each muscle group from toes to head for instant relief.'\n"
+        "- 'Let me suggest a mindfulness exercise: Focus on your breath for 60 seconds, noticing each inhale and exhale without judgment.'"
     }
 ]
+
+# Track recent responses to avoid repetition
+recent_responses = set()
+MAX_RECENT_RESPONSES = 15
+
+# ----------------- Response Variation Functions -----------------
+def get_varied_response(user_message):
+    """Provide varied, specific responses for common mental health requests"""
+    message_lower = user_message.lower().strip()
+    
+    # Relaxation techniques
+    if any(word in message_lower for word in ['relax', 'calm down', 'calm', 'unwind']):
+        techniques = [
+            "Let's try box breathing: Inhale for 4 counts, hold for 4, exhale for 4, hold for 4. Repeat 4-5 times. This regulates your nervous system.",
+            "How about progressive muscle relaxation? Tense your feet for 5 seconds, then release. Work upward through each muscle group - calves, thighs, hands, arms, shoulders. Notice the difference between tension and relaxation.",
+            "Let's do a quick mindfulness break: Close your eyes and focus only on your breathing for 60 seconds. When your mind wanders, gently return to your breath without judgment.",
+            "Try the 4-7-8 technique: Inhale through your nose for 4 counts, hold for 7, exhale through mouth for 8. This is especially good for anxiety and sleep.",
+            "Let's practice guided imagery: Imagine yourself in a peaceful place - a beach, forest, or cozy room. Engage all your senses - what do you see, hear, smell, and feel there?"
+        ]
+        return random.choice(techniques)
+    
+    # Anxiety reduction
+    elif any(word in message_lower for word in ['anxious', 'anxiety', 'panic', 'nervous', 'worried']):
+        anxiety_helpers = [
+            "For anxiety relief, try the 5-4-3-2-1 grounding technique: Name 5 things you see, 4 things you can touch, 3 things you hear, 2 things you smell, and 1 thing you taste. This brings you back to the present.",
+            "When anxiety hits, practice diaphragmatic breathing: Place one hand on chest, one on belly. Breathe deeply so only the belly hand moves. Do this for 2 minutes to calm your system.",
+            "Let's try a thought diffusion technique: Imagine your anxious thoughts as leaves floating down a stream. Acknowledge them without grabbing onto them, just watch them pass by.",
+            "For immediate anxiety relief: Splash cold water on your face or hold an ice cube. This triggers the mammalian diving reflex to slow heart rate.",
+            "Try the RAIN method: Recognize the anxiety, Allow it to be there, Investigate with curiosity, Nurture yourself with compassion."
+        ]
+        return random.choice(anxiety_helpers)
+    
+    # Stress management
+    elif any(word in message_lower for word in ['stress', 'stressed', 'overwhelmed', 'pressure']):
+        stress_techniques = [
+            "When stressed, try the 3-minute breathing space: 1 minute notice thoughts/feelings, 1 minute focus on breath, 1 minute expand awareness to body. This creates mental space.",
+            "Progressive relaxation can help: Make fists, hold tight for 5 seconds, release. Notice the warmth and relaxation. Do this with different muscle groups.",
+            "Let's try a quick body scan: Starting from your toes, slowly bring awareness to each body part. Notice any tension without trying to change it - just awareness.",
+            "For stress: Try alternate nostril breathing. Close right nostril, inhale left; close left, exhale right; inhale right, close right, exhale left. Repeat 5 times.",
+            "The 5 senses countdown: Find 5 things you can see, 4 you can touch, 3 you can hear, 2 you can smell, 1 you can taste. Great for pulling out of stressful thoughts."
+        ]
+        return random.choice(stress_techniques)
+    
+    # Sleep help
+    elif any(word in message_lower for word in ['sleep', 'tired', 'insomnia', 'can\'t sleep']):
+        sleep_helpers = [
+            "For better sleep: Try the 4-7-8 breathing method - inhale 4, hold 7, exhale 8. Repeat 4 times. This naturally calms your nervous system for sleep.",
+            "Progressive muscle relaxation for sleep: Tense then relax each muscle group from toes to head. Spend extra time on jaw, shoulders, and forehead where we hold tension.",
+            "Create a sleep ritual: 1 hour before bed, dim lights, no screens, do gentle stretching, write down worries, read a physical book. Consistency trains your brain for sleep.",
+            "Body scan for sleep: Lie down and slowly bring awareness from toes to head. At each body part, imagine breathing into that area and releasing tension with the exhale.",
+            "If mind is racing at night: Keep a notebook by bed. Write down all thoughts, then tell yourself 'I've captured this, I can let it go until morning.'"
+        ]
+        return random.choice(sleep_helpers)
+    
+    # Greetings
+    elif any(word in message_lower for word in ['hi', 'hello', 'hey', 'hola']):
+        greetings = [
+            "Hey there! I'm Mindful Mate. How are you feeling today?",
+            "Hello! I'm here to listen and help. What's on your mind?",
+            "Hi! How can I support you right now?",
+            "Hey! I'm glad you're here. How's everything going?",
+            "Hello there! What would you like to talk about today?"
+        ]
+        return random.choice(greetings)
+    
+    # Feeling down/depressed
+    elif any(word in message_lower for word in ['sad', 'depressed', 'down', 'hopeless', 'empty']):
+        mood_helpers = [
+            "When feeling down, try behavioral activation: Do one small, meaningful activity - even for 5 minutes. Action often precedes motivation.",
+            "Let's practice self-compassion: Place a hand on your heart and say 'This is hard right now, and that's okay. I'm doing my best.'",
+            "For low mood: Try the 5-minute rule. Pick one small task and commit to just 5 minutes. Often starting is the hardest part.",
+            "Create a comfort box: Fill it with things that engage your senses - favorite tea, soft blanket, calming music, photos, uplifting quotes.",
+            "Practice gratitude: Name 3 specific things you're grateful for today, no matter how small. This shifts focus to what's working."
+        ]
+        return random.choice(mood_helpers)
+    
+    # Anger/frustration
+    elif any(word in message_lower for word in ['angry', 'mad', 'frustrated', 'irritated', 'annoyed']):
+        anger_helpers = [
+            "For anger: Try the STOP method - Stop, Take a breath, Observe your feelings, Proceed mindfully. Creates space between trigger and response.",
+            "When frustrated: Use cold water - splash face, hold ice cube, or drink cold water. This physically interrupts the anger response.",
+            "Progressive muscle release for anger: Tense all muscles tightly for 10 seconds, then completely release. Repeat 3 times to discharge physical tension.",
+            "Anger often masks other feelings. Ask: What am I really feeling underneath? Hurt? Fear? Injustice? Naming the core emotion reduces its intensity.",
+            "Try vigorous exercise - pushups, running in place, punching a pillow. Physical movement helps release angry energy safely."
+        ]
+        return random.choice(anger_helpers)
+    
+    return None
+
+def is_response_repetitive(response):
+    """Check if response is too similar to recent ones"""
+    response_start = response[:80].lower()
+    return any(response_start in recent_resp for recent_resp in recent_responses)
+
+def add_to_recent_responses(response):
+    """Add response to recent responses tracking"""
+    recent_responses.add(response[:80].lower())
+    if len(recent_responses) > MAX_RECENT_RESPONSES:
+        recent_responses.pop()
 
 # ----------------- Dummy Data -----------------
 profs = [
@@ -185,37 +299,48 @@ def chat():
     if not user_message:
         return jsonify({"reply": "Please enter a message."})
 
-    # Handle greetings
+    # Only handle VERY basic greetings locally
     if user_message.lower() in ["hi", "hello", "hey"]:
-        ai_reply = "Hey there! How's it going?"
+        greetings = [
+            "Hey there! How's it going today?",
+            "Hello! I'm here to listen. What's on your mind?",
+            "Hi! How can I support you right now?",
+            "Hey! I'm glad you reached out. How are you feeling?"
+        ]
+        ai_reply = random.choice(greetings)
         conversation_history.append({"role": "user", "content": user_message})
         conversation_history.append({"role": "assistant", "content": ai_reply})
         return jsonify({"reply": ai_reply})
 
+    # ALL OTHER MESSAGES GO TO GROQ API
     try:
         # Add user message to conversation history
         conversation_history.append({"role": "user", "content": user_message})
 
-        # Call Groq API with updated model
+        print(f"🚀 Sending to Groq API: '{user_message}'")  # Debug log
+
+        # Call Groq API - this is where API calls happen
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",  # Updated model - you can also try "mixtral-8x7b-32768" or "gemma2-9b-it"
+            model="llama-3.1-8b-instant",
             messages=conversation_history,
-            max_tokens=150,
-            temperature=0.7
+            max_tokens=200,
+            temperature=0.8,
+            top_p=0.9
         )
 
-        # Correct way to extract the response content
-        ai_reply = response.choices[0].message.content
+        print("✅ Groq API call successful!")  # Debug log
+
+        # Extract the response content
+        ai_reply = response.choices[0].message.content.strip()
 
         if not ai_reply:
-            ai_reply = "Sorry, I couldn't generate a response at the moment."
+            ai_reply = "I'm here to listen. Could you tell me more about what you're experiencing?"
 
         # Add assistant reply to conversation history
         conversation_history.append({"role": "assistant", "content": ai_reply})
 
-        # Limit conversation history to prevent it from growing too large
+        # Limit conversation history
         if len(conversation_history) > 20:
-            # Keep system message and last 19 exchanges
             system_msg = conversation_history[0]
             recent_history = conversation_history[-19:]
             conversation_history.clear()
@@ -225,15 +350,16 @@ def chat():
         return jsonify({"reply": ai_reply})
 
     except Exception as e:
-        print(f"Error from Groq API: {str(e)}")
-        # Fallback response in case of API error
+        print(f"❌ Groq API Error: {str(e)}")
+        # Fallback responses only when API fails
         fallback_responses = [
-            "I'm having trouble connecting right now. Please try again in a moment.",
-            "It seems I'm experiencing some technical difficulties. Let's try that again.",
-            "I apologize, but I'm unable to respond properly at the moment. Please try again shortly."
+            "I'm having some technical difficulties, but I'm still here for you. Let's try a simple breathing exercise together.",
+            "It seems I'm having connection issues. In the meantime, try this grounding technique.",
+            "I apologize for the technical trouble. While I work on this, remember to take deep breaths."
         ]
-        import random
         ai_reply = random.choice(fallback_responses)
+        conversation_history.append({"role": "user", "content": user_message})
+        conversation_history.append({"role": "assistant", "content": ai_reply})
         return jsonify({"reply": ai_reply})
 
 @app.route("/profile/<username>")
@@ -593,3 +719,4 @@ def breathe_game():
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000, host="0.0.0.0")
+
