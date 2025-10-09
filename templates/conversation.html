@@ -680,7 +680,7 @@
         // Create relaxing background bubbles
         function createRelaxingBubbles() {
             const container = document.getElementById('floatingElements');
-            const bubbleCount = 12; // Perfect number for relaxation
+            const bubbleCount = 12;
             
             const animationTypes = ['bubble-1', 'bubble-2', 'bubble-3', 'bubble-4', 'bubble-5'];
             
@@ -688,13 +688,12 @@
                 const bubble = document.createElement('div');
                 bubble.classList.add('floating-element');
                 
-                // Random properties for natural variety
-                const size = Math.random() * 40 + 20; // 20-60px
+                const size = Math.random() * 40 + 20;
                 const left = Math.random() * 100;
                 const top = Math.random() * 100;
                 const animationType = animationTypes[Math.floor(Math.random() * animationTypes.length)];
-                const animationDuration = 8 + Math.random() * 12; // 8-20 seconds
-                const animationDelay = Math.random() * 5; // 0-5 second delay
+                const animationDuration = 8 + Math.random() * 12;
+                const animationDelay = Math.random() * 5;
                 
                 bubble.style.width = size + 'px';
                 bubble.style.height = size + 'px';
@@ -704,10 +703,9 @@
                 bubble.style.animationDelay = animationDelay + 's';
                 bubble.classList.add(animationType);
                 
-                // Subtle color variations
-                const hueVariation = Math.random() * 20 - 10; // -10 to +10 degrees
-                const saturation = 70 + Math.random() * 20; // 70-90%
-                const lightness = 50 + Math.random() * 10; // 50-60%
+                const hueVariation = Math.random() * 20 - 10;
+                const saturation = 70 + Math.random() * 20;
+                const lightness = 50 + Math.random() * 10;
                 
                 bubble.style.background = `radial-gradient(circle, 
                     hsla(${200 + hueVariation}, ${saturation}%, ${lightness}%, 0.6),
@@ -875,21 +873,37 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
             try {
-                // Simulate API response for demo purposes
-                // In a real implementation, you would call your backend API
-                const demoResponse = getDemoResponse(userInput, currentLanguage);
+                // ✅ ACTUAL API CALL to your Flask backend
+                console.log("📡 Sending API request to backend...");
+                
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userInput })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log("✅ API Response received:", data);
+                
+                const aiReply = data.reply || "I'm here to listen. Could you tell me more about how you're feeling?";
                 
                 // Get character expression based on response
-                const expression = getCharacterExpression(demoResponse);
+                const expression = getCharacterExpression(aiReply);
                 
-                // Update character message with response
+                // Update character message with REAL API response
                 setTimeout(() => {
                     characterBubble.innerHTML = `
                         <div class="character-name">
                             ${languageData[currentLanguage].characterName}
                             <span class="expression-tag">${expression.expression}</span>
                         </div>
-                        <div class="message-content">${demoResponse}</div>
+                        <div class="message-content">${aiReply}</div>
                         <div class="message-time">${getCurrentTime()}</div>
                     `;
                     
@@ -899,48 +913,28 @@
                     // Speak the response
                     setTimeout(() => {
                         characterAvatar.classList.add("talking");
-                        speakText(demoResponse);
+                        speakText(aiReply);
                         setTimeout(() => {
                             characterAvatar.classList.remove("talking");
                             characterAvatar.classList.add(expression.animation);
                         }, 2000);
                     }, 800);
-                }, 1500);
+                }, 1000);
                 
             } catch (error) {
+                console.error("❌ API Call failed:", error);
+                
+                // Fallback response when API fails
                 characterBubble.innerHTML = `
                     <div class="character-name">
                         ${languageData[currentLanguage].characterName}
                         <span class="expression-tag">😔 Connection issue</span>
                     </div>
-                    <div class="message-content">Sorry, I'm having trouble connecting right now. Please try again.</div>
+                    <div class="message-content">I'm having trouble connecting right now. Let me suggest a breathing exercise: Inhale for 4 counts, hold for 4, exhale for 6. Repeat 3 times.</div>
                     <div class="message-time">${getCurrentTime()}</div>
                 `;
                 characterAvatar.className = "character-avatar sad";
             }
-        }
-
-        // Demo response function - replace with actual API call
-        function getDemoResponse(userInput, language) {
-            const responses = {
-                en: [
-                    "I understand how you're feeling. Let's take a moment to breathe together.",
-                    "It's completely normal to feel this way sometimes. Would you like to try a simple relaxation exercise?",
-                    "Thank you for sharing that with me. Remember, it's okay to not be okay sometimes.",
-                    "I'm here to support you. Let's work through this together, one step at a time.",
-                    "Your feelings are valid. Would you like to talk more about what's on your mind?"
-                ],
-                hi: [
-                    "मैं समझता हूं कि आप कैसा महसूस कर रहे हैं। चलिए एक साथ एक पल के लिए सांस लेते हैं।",
-                    "कभी-कभी इस तरह महसूस करना पूरी तरह से सामान्य है। क्या आप एक सरल विश्राम अभ्यास आजमाना चाहेंगे?",
-                    "मुझसे यह साझा करने के लिए धन्यवाद। याद रखें, कभी-कभी ठीक नहीं होना भी ठीक है।",
-                    "मैं आपका समर्थन करने के लिए यहां हूं। चलिए इस पर एक साथ काम करते हैं, एक कदम बारी।",
-                    "आपकी भावनाएं मान्य हैं। क्या आप अपने मन में जो चल रहा है, उसके बारे में और बात करना चाहेंगे?"
-                ]
-            };
-            
-            const langResponses = responses[language] || responses.en;
-            return langResponses[Math.floor(Math.random() * langResponses.length)];
         }
 
         function getCurrentTime() {
@@ -996,3 +990,4 @@
     </script>
 </body>
 </html>
+
