@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MindEase - Mental Wellness Resources</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #000000 0%, #0a1a2a 100%);
+        color: #ffffff;
+        min-height: 100vh;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      header {
+        background: rgba(10, 10, 10, 0.9);
+        color: white;
+        padding: 1rem 0;
+        box-shadow: 0 4px 20px rgba(0, 191, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(0, 191, 255, 0.3);
+      }
+
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 1.8rem;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        background: linear-gradient(90deg, #00bfff, #00ffaa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .logo i {
+        margin-right: 10px;
+      }
+
+      .nav-links {
+        display: flex;
+        list-style: none;
+      }
+
+      .nav-links li {
+        margin-left: 2rem;
+      }
+
+      .nav-links a {
+        color: #cccccc;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        padding: 5px 10px;
+        border-radius: 5px;
+      }
+
+      .nav-links a:hover {
+        color: #00bfff;
+        background: rgba(0, 191, 255, 0.1);
+      }
+
+      .hero {
+        text-align: center;
+        padding: 4rem 0;
+        background: url("https://images.unsplash.com/photo-1530092285049-1c42085fd395?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80")
+          no-repeat center center/cover;
+        color: white;
+        position: relative;
+        margin: 2rem 0;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+      }
+
+      .hero-content {
+        position: relative;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(90deg, #00bfff, #00ffaa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 10px rgba(0, 191, 255, 0.3);
+      }
+
+      .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        color: #cccccc;
+      }
+
+      .btn {
+        display: inline-block;
+        background: linear-gradient(135deg, #00bfff, #0080ff);
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 50px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(0, 191, 255, 0.3);
+      }
+
+      .btn:hover {
+        background: linear-gradient(135deg, #00a6d6, #0077cc);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 191, 255, 0.5);
+      }
+
+      .section-title {
+        text-align: center;
+        margin: 3rem 0 2rem;
+        font-size: 2.2rem;
+        background: linear-gradient(90deg, #00bfff, #00ffaa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .resources {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+      }
+
+      .resource-card {
+        background: rgba(18, 18, 18, 0.8);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(0, 191, 255, 0.2);
+        backdrop-filter: blur(10px);
+      }
+
+      .resource-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 191, 255, 0.3);
+        border-color: rgba(0, 191, 255, 0.5);
+      }
+
+      .card-img {
+        height: 200px;
+        overflow: hidden;
+      }
+
+      .card-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+      }
+
+      .resource-card:hover .card-img img {
+        transform: scale(1.1);
+      }
+
+      .card-content {
+        padding: 1.5rem;
+      }
+
+      .card-content h3 {
+        margin-bottom: 0.5rem;
+        color: #00bfff;
+      }
+
+      .card-content p {
+        color: #cccccc;
+        margin-bottom: 1rem;
+      }
+
+      .language {
+        display: inline-block;
+        background: rgba(0, 191, 255, 0.2);
+        color: #00bfff;
+        padding: 0.3rem 0.6rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(0, 191, 255, 0.3);
+      }
+
+      .filters {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .filter-btn {
+        background: rgba(30, 30, 30, 0.8);
+        border: 1px solid rgba(0, 191, 255, 0.5);
+        color: #cccccc;
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .filter-btn.active,
+      .filter-btn:hover {
+        background: linear-gradient(135deg, #00bfff, #0080ff);
+        color: white;
+        box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+      }
+
+      /* --- Fixed Language Dropdown Styles --- */
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+
+      .dropdown-btn {
+        background: rgba(30, 30, 30, 0.8);
+        border: 1px solid rgba(0, 191, 255, 0.5);
+        color: #cccccc;
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .dropdown-btn:hover {
+        background: linear-gradient(135deg, #00bfff, #0080ff);
+        color: white;
+        box-shadow: 0 0 15px rgba(0, 191, 255, 0.5);
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background: rgba(30, 30, 30, 0.95);
+        min-width: 200px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        border-radius: 10px;
+        top: 100%;
+        left: 0;
+        margin-top: 5px;
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid rgba(0, 191, 255, 0.3);
+        backdrop-filter: blur(10px);
+      }
+
+      .dropdown-content.show {
+        display: block;
+      }
+
+      .dropdown-content a {
+        color: #cccccc;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        text-align: left;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .dropdown-content a:hover {
+        background: rgba(0, 191, 255, 0.2);
+        color: #00bfff;
+      }
+
+      .dropdown-content a:last-child {
+        border-bottom: none;
+      }
+
+      /* Make sure dropdown stays open when hovering over it */
+      .dropdown:hover .dropdown-content,
+      .dropdown-content:hover {
+        display: block;
+      }
+
+      .player {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(18, 18, 18, 0.95);
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
+        padding: 1rem;
+        display: none;
+        z-index: 1000;
+        border-top: 1px solid rgba(0, 191, 255, 0.3);
+        backdrop-filter: blur(10px);
+      }
+
+      .player.active {
+        display: block;
+        animation: slideUp 0.3s ease-out;
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translateY(100%);
+        }
+        to {
+          transform: translateY(0);
+        }
+      }
+
+      .player-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .player-info {
+        display: flex;
+        align-items: center;
+      }
+
+      .player-img {
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-right: 1rem;
+        border: 1px solid rgba(0, 191, 255, 0.3);
+      }
+
+      .player-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .player-controls {
+        display: flex;
+        align-items: center;
+      }
+
+      .player-controls button {
+        background: linear-gradient(135deg, #00bfff, #0080ff);
+        color: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 191, 255, 0.3);
+      }
+
+      .player-controls button:hover {
+        background: linear-gradient(135deg, #00a6d6, #0077cc);
+        transform: scale(1.1);
+      }
+
+      .close-player {
+        background: linear-gradient(135deg, #ff416c, #ff4b2b) !important;
+      }
+
+      footer {
+        background: rgba(10, 10, 10, 0.9);
+        color: #cccccc;
+        text-align: center;
+        padding: 2rem 0;
+        margin-top: 4rem;
+        border-top: 1px solid rgba(0, 191, 255, 0.2);
+      }
+
+      .loading {
+        text-align: center;
+        padding: 2rem;
+        font-size: 1.2rem;
+        color: #00bfff;
+      }
+
+      .error {
+        text-align: center;
+        padding: 2rem;
+        color: #ff6b6b;
+        background: rgba(255, 107, 107, 0.1);
+        border-radius: 10px;
+        margin: 2rem 0;
+        border: 1px solid rgba(255, 107, 107, 0.3);
+      }
+
+      /* Floating background elements */
+      .floating-elements {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .floating-element {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: rgba(0, 191, 255, 0.5);
+        border-radius: 50%;
+        animation: float 15s infinite linear;
+      }
+
+      @keyframes float {
+        0% {
+          transform: translateY(0) translateX(0);
+        }
+        25% {
+          transform: translateY(-20px) translateX(10px);
+        }
+        50% {
+          transform: translateY(-40px) translateX(-10px);
+        }
+        75% {
+          transform: translateY(-20px) translateX(-20px);
+        }
+        100% {
+          transform: translateY(0) translateX(0);
+        }
+      }
+
+      /* --- Responsive Styles --- */
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none;
+        }
+
+        .hero h1 {
+          font-size: 2rem;
+        }
+
+        .resources {
+          grid-template-columns: 1fr;
+        }
+
+        .player-content {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .player-info {
+          margin-bottom: 1rem;
+        }
+
+        .filters {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .filter-btn,
+        .dropdown {
+          width: 100%;
+          max-width: 250px;
+          text-align: center;
+        }
+
+        .dropdown-content {
+          left: 50%;
+          transform: translateX(-50%);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="floating-elements" id="floatingElements"></div>
+
+    <header>
+      <div class="container">
+        <nav>
+          <div class="logo">
+            <i class="fas fa-brain"></i>
+            <span>MindEase</span>
+          </div>
+          <ul class="nav-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Resources</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <div class="container">
+      <section class="hero">
+        <div class="container hero-content">
+          <h1>Your Mental Wellness Journey Starts Here</h1>
+          <p>
+            Discover resources for mental health in multiple regional languages
+          </p>
+          <a href="#resources" class="btn">Explore Resources</a>
+        </div>
+      </section>
+
+      <h2 class="section-title" id="resources">Wellness Resources</h2>
+
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="video">Videos</button>
+        <button class="filter-btn" data-filter="audio">Audio</button>
+        <button class="filter-btn" data-filter="guide">Guides</button>
+
+        <div class="dropdown" id="languageDropdown">
+          <button class="dropdown-btn" id="dropdownButton">
+            <span>Select Languages</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="dropdown-content" id="dropdownContent">
+            <a href="#" data-lang="all">All Languages</a>
+            <a href="#" data-lang="english">English</a>
+            <a href="#" data-lang="hindi">Hindi</a>
+            <a href="#" data-lang="bengali">Bengali</a>
+            <a href="#" data-lang="telugu">Telugu</a>
+            <a href="#" data-lang="marathi">Marathi</a>
+            <a href="#" data-lang="tamil">Tamil</a>
+            <a href="#" data-lang="gujarati">Gujarati</a>
+            <a href="#" data-lang="kannada">Kannada</a>
+            <a href="#" data-lang="malayalam">Malayalam</a>
+            <a href="#" data-lang="punjabi">Punjabi</a>
+            <a href="#" data-lang="odia">Odia</a>
+            <a href="#" data-lang="assamese">Assamese</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="resources" id="resource-container">
+        <div class="loading">
+          <i class="fas fa-spinner fa-spin"></i> Loading resources...
+        </div>
+      </div>
+    </div>
+
+    <div class="player" id="player">
+      <div class="player-content">
+        <div class="player-info">
+          <div class="player-img">
+            <img id="player-thumb" src="" alt="" />
+          </div>
+          <div>
+            <h3 id="player-title"></h3>
+            <p id="player-desc"></p>
+          </div>
+        </div>
+        <div class="player-controls">
+          <button id="play-pause"><i class="fas fa-play"></i></button>
+          <button class="close-player" id="close-player">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="container">
+        <p>
+          &copy; 2023 MindWell - Mental Wellness Resources. All rights reserved.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // Create floating background elements
+      function createFloatingElements() {
+        const container = document.getElementById("floatingElements");
+        for (let i = 0; i < 20; i++) {
+          const element = document.createElement("div");
+          element.classList.add("floating-element");
+          element.style.left = `${Math.random() * 100}%`;
+          element.style.top = `${Math.random() * 100}%`;
+          element.style.animationDelay = `${Math.random() * 15}s`;
+          element.style.width = `${Math.random() * 6 + 4}px`;
+          element.style.height = element.style.width;
+          container.appendChild(element);
+        }
+      }
+
+      const resourceContainer = document.getElementById("resource-container");
+      const player = document.getElementById("player");
+      const playerThumb = document.getElementById("player-thumb");
+      const playerTitle = document.getElementById("player-title");
+      const playerDesc = document.getElementById("player-desc");
+      const playPauseBtn = document.getElementById("play-pause");
+      const closePlayerBtn = document.getElementById("close-player");
+      const filterBtns = document.querySelectorAll(".filter-btn");
+      const dropdownButton = document.getElementById("dropdownButton");
+      const dropdownContent = document.getElementById("dropdownContent");
+      const dropdownBtnText = document.querySelector(".dropdown-btn span");
+
+      let audioContext = null;
+      let audioBuffer = null;
+      let audioSource = null;
+      let isPlaying = false;
+      let currentAudio = null;
+
+      const allResources = [
+        {
+          id: 1,
+          title: "Mindful Breathing",
+          description: "A short guide to mindful breathing.",
+          type: "guide",
+          language: "english",
+          url: "https://uhs.berkeley.edu/sites/default/files/breathing_exercises_0.pdf",
+          thumbnail:
+            "https://www.mindful.org/content/uploads/Meditation-Mindfulness-1-1024x640.jpg",
+        },
+        {
+          id: 2,
+          title: "Guided Meditation",
+          description: "A relaxing audio meditation.",
+          type: "audio",
+          language: "hindi",
+          url: "#",
+          thumbnail:
+            "https://www.shutterstock.com/image-vector/deep-breath-mindfulness-concept-woman-260nw-2497488045.jpg",
+        },
+        {
+          id: 3,
+          title: "Managing Stress",
+          description: "Video tips to manage daily stress.",
+          type: "video",
+          language: "english",
+          url: "https://www.youtube.com/watch?v=qUz93CyNIz0",
+          thumbnail:
+            "https://thumbs.dreamstime.com/b/professional-stress-management-work-cartoon-subordinate-laughs-boss-anger-managing-emotions-workplace-resolves-conflict-149996769.jpg",
+        },
+        {
+          id: 4,
+          title: "Journaling for Anxiety",
+          description: "A guide on how to use journaling.",
+          type: "guide",
+          language: "hindi",
+          url: "https://www.chp.gov.hk/files/pdf/anxiety_disorders_infographics_hindi.pdf",
+          thumbnail: "https://gocalmer.com/images/woman-with-a-journal.jpeg",
+        },
+        {
+          id: 5,
+          title: "Peaceful Sleep Music",
+          description: "Music to help you fall asleep.",
+          type: "audio",
+          language: "english",
+          url: "#",
+          thumbnail:
+            "https://thumbs.dreamstime.com/b/person-illustrated-sleeping-bed-wearing-smartwatch-displays-heart-rate-other-health-data-room-softly-lit-396695210.jpg",
+        },
+        {
+          id: 6,
+          title: "Yoga for Calmness",
+          description: "Simple yoga poses for relaxation.",
+          type: "video",
+          language: "bengali",
+          url: "https://www.youtube.com/watch?v=AHIS316LjsQ",
+          thumbnail:
+            "https://static.vecteezy.com/system/resources/previews/024/620/959/non_2x/yoga-meditation-mindfulness-relaxation-and-inner-peace-serene-calm-woman-enjoying-meditation-in-nature-while-her-eyes-closed-breathing-exercises-with-hands-in-zen-gesture-concept-illustration-vector.jpg",
+        },
+        {
+          id: 7,
+          title: "Coping with Depression",
+          description: "A short guide to coping mechanisms.",
+          type: "guide",
+          language: "telugu",
+          url: "https://www.scribd.com/doc/60130702/Manasika-Aarogyam",
+          thumbnail:
+            "https://click2pro.com/media/blog/74dd755258738135ac18558a69faaa01.jpg",
+        },
+        {
+          id: 8,
+          title: "Breathing Exercises",
+          description: "Simple breathing exercises for quick relief.",
+          type: "audio",
+          language: "marathi",
+          url: "#",
+          thumbnail:
+            "https://lirp.cdn-website.com/056e16c2/dms3rep/multi/opt/Deep+Breathing+Exercises+3-640w.png",
+        },
+        {
+          id: 9,
+          title: "Healthy Mindset",
+          description: "A video about building a positive mindset.",
+          type: "video",
+          language: "tamil",
+          url: "https://www.youtube.com/watch?v=kuUZa6u8nH8",
+          thumbnail:
+            "https://img.freepik.com/premium-vector/mental-health-concept-woman-with-mind-healthy-icons-illustration-design_24877-66811.jpg",
+        },
+        {
+          id: 10,
+          title: "Managing Overthinking",
+          description: "Guide to stop overthinking.",
+          type: "guide",
+          language: "gujarati",
+          url: "https://www.yahalife.com/post/top-10-tips-on-how-to-overcome-depression-and-overthinking-in-gujarati?srsltid=AfmBOoopJsIca_lZmvJGvE2UYWIgBNxe4dtRjxxChOPn4i0YDOhDHsX5",
+          thumbnail:
+            "https://c8.alamy.com/comp/2WP8YF6/anxiety-character-mental-health-issues-woman-coping-with-psychological-stress-mental-disorder-emotional-and-physical-symptom-flat-vector-illustration-2WP8YF6.jpg",
+        },
+        {
+          id: 11,
+          title: "Relaxing Rain Sounds",
+          description: "Audio for a relaxing atmosphere.",
+          type: "audio",
+          language: "kannada",
+          url: "#",
+          thumbnail:
+            "https://blenderartists.org/uploads/default/optimized/4X/f/4/b/f4b2c7eb7a8bf328098b9481872fadb9e57ffb26_2_1024x1024.jpeg",
+        },
+        {
+          id: 12,
+          title: "Self-Care Tips",
+          description: "A video on simple self-care routines.",
+          type: "video",
+          language: "malayalam",
+          url: "https://www.youtube.com/watch?v=NjhGATlyvLk",
+          thumbnail:
+            "https://media.licdn.com/dms/image/v2/D4D12AQHTtPVP_3J3Jw/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1687946240654?e=2147483647&v=beta&t=DHjvqt6_QkzZMMYGt8FkQ26By7e_vO_1XjekI6wR7Uc",
+        },
+        {
+          id: 13,
+          title: "Gratitude Journal",
+          description: "A guide to starting a gratitude journal.",
+          type: "guide",
+          language: "punjabi",
+          url: "https://positivepsychology.com/gratitude-journal-pdf/",
+          thumbnail:
+            "https://media.istockphoto.com/id/1488247074/vector/learning-and-reading-concept.jpg?s=612x612&w=0&k=20&c=qPiVkW4bjR4xJ-iugnBub-OGL8HA4D2u6d0DcwS0V3g=",
+        },
+        {
+          id: 14,
+          title: "Calmness Meditation",
+          description: "A deep meditation audio for calmness.",
+          type: "audio",
+          language: "odia",
+          url: "#",
+          thumbnail:
+            "https://static.vecteezy.com/system/resources/previews/024/620/959/non_2x/yoga-meditation-mindfulness-relaxation-and-inner-peace-serene-calm-woman-enjoying-meditation-in-nature-while-her-eyes-closed-breathing-exercises-with-hands-in-zen-gesture-concept-illustration-vector.jpg",
+        },
+        {
+          id: 15,
+          title: "Emotional Regulation",
+          description: "Video on how to regulate emotions.",
+          type: "video",
+          language: "assamese",
+          url: "https://www.youtube.com/watch?v=ziMeN2gvfh8",
+          thumbnail:
+            "https://lindsaybraman.com/wp-content/uploads/2021/03/LB-2021-Rainbow-Regulation-SEL-SlidesB-2.png",
+        },
+      ];
+
+      let currentResources = [];
+      let currentLanguage = "all";
+      let dropdownOpen = false;
+
+      // Toggle dropdown visibility
+      function toggleDropdown() {
+        dropdownOpen = !dropdownOpen;
+        if (dropdownOpen) {
+          dropdownContent.classList.add("show");
+        } else {
+          dropdownContent.classList.remove("show");
+        }
+      }
+
+      // Close dropdown when clicking outside
+      function closeDropdown(e) {
+        if (!e.target.closest(".dropdown")) {
+          dropdownOpen = false;
+          dropdownContent.classList.remove("show");
+        }
+      }
+
+      // Initialize dropdown functionality
+      function initDropdown() {
+        dropdownButton.addEventListener("click", function (e) {
+          e.stopPropagation();
+          toggleDropdown();
+        });
+
+        // Add click event to dropdown items
+        dropdownContent.querySelectorAll("a").forEach((link) => {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            const selectedLanguage = this.getAttribute("data-lang");
+            filterBtns.forEach((b) => b.classList.remove("active"));
+            document
+              .querySelector('[data-filter="all"]')
+              .classList.add("active");
+            loadResources(selectedLanguage);
+
+            // Update dropdown button text
+            const langName =
+              selectedLanguage === "all"
+                ? "Select Languages"
+                : selectedLanguage.charAt(0).toUpperCase() +
+                  selectedLanguage.slice(1);
+            dropdownBtnText.textContent = langName;
+
+            // Close dropdown after selection
+            dropdownOpen = false;
+            dropdownContent.classList.remove("show");
+          });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", closeDropdown);
+      }
+
+      function loadResources(language = "all") {
+        resourceContainer.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading resources...</div>`;
+        setTimeout(() => {
+          let filteredResources = allResources;
+          if (language !== "all") {
+            filteredResources = allResources.filter(
+              (resource) => resource.language === language
+            );
+          }
+          currentResources = filteredResources;
+          displayResources(currentResources);
+          currentLanguage = language;
+        }, 500);
+      }
+
+      function displayResources(resources) {
+        if (resources.length === 0) {
+          resourceContainer.innerHTML =
+            '<div class="error">No resources found for this language.</div>';
+          return;
+        }
+
+        resourceContainer.innerHTML = "";
+
+        resources.forEach((resource) => {
+          const card = document.createElement("div");
+          card.className = `resource-card ${resource.type}`;
+
+          card.innerHTML = `
+                    <div class="card-img">
+                        <img src="${resource.thumbnail}" alt="${
+            resource.title
+          }">
+                    </div>
+                    <div class="card-content">
+                        <span class="language">${
+                          resource.language.charAt(0).toUpperCase() +
+                          resource.language.slice(1)
+                        }</span>
+                        <h3>${resource.title}</h3>
+                        <p>${resource.description}</p>
+                        <button class="btn play-btn" data-id="${resource.id}">
+                            ${
+                              resource.type === "video"
+                                ? "Watch"
+                                : resource.type === "audio"
+                                ? "Listen"
+                                : "Read"
+                            }
+                        </button>
+                    </div>
+                `;
+
+          resourceContainer.appendChild(card);
+        });
+
+        document.querySelectorAll(".play-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            const resourceId = this.getAttribute("data-id");
+            const resource = currentResources.find((r) => r.id == resourceId);
+
+            if (resource) {
+              if (resource.type === "audio") {
+                playAudio(resource);
+              } else {
+                openResource(resource);
+              }
+            }
+          });
+        });
+      }
+
+      function playAudio(resource) {
+        if (currentAudio) {
+          stopAudio();
+        }
+
+        if (!audioContext) {
+          audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+        }
+
+        player.classList.add("active");
+        playerThumb.src = resource.thumbnail;
+        playerTitle.textContent = resource.title;
+        playerDesc.textContent = resource.description;
+
+        isPlaying = true;
+        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        currentAudio = resource;
+
+        console.log(`Playing audio: ${resource.title}`);
+      }
+
+      function stopAudio() {
+        if (audioSource) {
+          audioSource.stop();
+          audioSource = null;
+        }
+        isPlaying = false;
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+      }
+
+      function openResource(resource) {
+        window.open(resource.url, "_blank");
+      }
+
+      function filterResourcesByType(type) {
+        const cards = document.querySelectorAll(".resource-card");
+
+        cards.forEach((card) => {
+          if (type === "all" || card.classList.contains(type)) {
+            card.style.display = "block";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      }
+
+      playPauseBtn.addEventListener("click", function () {
+        if (isPlaying) {
+          stopAudio();
+        } else if (currentAudio) {
+          isPlaying = true;
+          playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+          console.log(`Resuming audio: ${currentAudio.title}`);
+        }
+      });
+
+      closePlayerBtn.addEventListener("click", function () {
+        player.classList.remove("active");
+        stopAudio();
+        currentAudio = null;
+      });
+
+      filterBtns.forEach((btn) => {
+        btn.addEventListener("click", function () {
+          filterBtns.forEach((b) => b.classList.remove("active"));
+          this.classList.add("active");
+          const filter = this.getAttribute("data-filter");
+          filterResourcesByType(filter);
+        });
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadResources();
+        createFloatingElements();
+        initDropdown();
+      });
+    </script>
+  </body>
+</html>

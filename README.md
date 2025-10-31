@@ -1,2 +1,3 @@
-# MindLess
- Coming soon!😊
+# MindEase
+
+Coming soon!😊

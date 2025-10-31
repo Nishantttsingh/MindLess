@@ -717,6 +717,10 @@ def memory_game():
 def breathe_game():
     return render_template('breathgame.html')
 
+@app.route('/resources')
+def resources_page():
+    return render_template('resources.html')
+
 if __name__ == "__main__":
     app.run(debug=True, port=8000, host="0.0.0.0")
 
